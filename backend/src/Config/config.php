@@ -6,9 +6,9 @@
 
     class Database {
         private static $host = "localhost";
-        private static $dbname = "redmis_db";
-        private static $username = "root";
-        private static $password = "";
+        private static $dbname = "mr_db";
+        private static $username = "mr_user";
+        private static $password = "REDMIS";
         private static $pdo = null;
 
         public static function connect() {
