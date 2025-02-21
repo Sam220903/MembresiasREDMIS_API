@@ -1,12 +1,10 @@
 <?php
-    namespace App\Controllers;
-    use App\Services\UserService;
 
     class AuthController {
         private $userService;
 
-        public function __construct() {
-            $this->userService = new UserService();
+        public function __construct($userService) {
+            $this->userService = $userService;
         }
 
         public function login() {
