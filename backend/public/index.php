@@ -22,8 +22,13 @@ spl_autoload_register(function ($class) {
 include_once '../src/Config/header.php';
 include_once '../src/config/config.php';
 
+// Firma JWT, esta clave debe de ser una variable de entorno en producción
+$jwt = new Jwt('123456');
+
 // Única conexión a la base de datos
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
+
+$tokenGateway = new TokenService($database);
 
 // Encuentra la ruta y el id en la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
