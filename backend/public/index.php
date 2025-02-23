@@ -24,6 +24,7 @@ include_once '../src/config/config.php';
 
 // Única conexión a la base de datos
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
+$dbConnection = $database->getConnection(); // Ensure you get the connection object
 
 // Encuentra la ruta y el id en la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -47,6 +48,18 @@ switch ($route){
         break;
 
     // Agregar más rutas aquí con su case:
+
+    case "membresias":
+        $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
+        $membresiasController = new MembresiaController($membresiasService);
+        try {
+            $response = $membresiasController->getMembresias($_SERVER);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
 
     default:
         http_response_code(404);
