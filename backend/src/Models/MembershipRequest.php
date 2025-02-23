@@ -20,8 +20,13 @@ class MembershipRequest {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function updateStatus($id, $status) {
-        $stmt = $this->pdo->prepare("UPDATE MR_Miembros SET MR_EstatusMiembros_id = :status WHERE id = :id");
-        return $stmt->execute([':status' => $status, ':id' => $id]);
+    public function updateStatus($id, $status, $reason = null) {
+        if ($status === 'rechazada' && $reason) {
+            $stmt = $this->pdo->prepare("UPDATE MR_Miembros SET MR_EstatusMiembros_id = :status, motivo_rechazo = :reason WHERE id = :id");
+            return $stmt->execute([':status' => $status, ':reason' => $reason, ':id' => $id]);
+        } else {
+            $stmt = $this->pdo->prepare("UPDATE MR_Miembros SET MR_EstatusMiembros_id = :status WHERE id = :id");
+            return $stmt->execute([':status' => $status, ':id' => $id]);
+        }
     }
 }
