@@ -1,117 +1,154 @@
--- Host: localhost    Database: mr_db
--- Versión 2
--- Modificado por Brenda SV
-
--- ------------------------------------------------------
-
--- Se agregó la creación y selección de la base de datos
-CREATE DATABASE IF NOT EXISTS mr_db;
-USE mr_db;
-
--- Crear las tablas sin restricciones de claves foráneas
-CREATE TABLE MR_EstatusMiembros (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL,
-    descripcion TEXT
+create table MR_EstatusMiembros
+(
+    id          int          not null
+        primary key,
+    nombre      varchar(120) not null,
+    descripcion text         null
 );
 
-CREATE TABLE MR_TiposUsuario (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL,
-    descripcion TEXT
+create table MR_LineaInvestigaciones
+(
+    id     int          not null
+        primary key,
+    nombre varchar(120) not null
 );
 
-CREATE TABLE MR_Universidades (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL
+create table MR_Membresias
+(
+    id           int          not null
+        primary key,
+    nombre       varchar(120) not null,
+    fecha_inicio date         null,
+    fecha_fin    date         null,
+    tipo         varchar(50)  not null
 );
 
-CREATE TABLE MR_Paises (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL
+create table MR_Paises
+(
+    id     int          not null
+        primary key,
+    nombre varchar(120) not null
 );
 
-CREATE TABLE MR_Estados (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL,
-    MR_Paises_id INT NOT NULL
+create table MR_Estados
+(
+    id           int          not null
+        primary key,
+    nombre       varchar(120) not null,
+    MR_Paises_id int          not null,
+    constraint MR_Estados_MR_Paises_FK
+        foreign key (MR_Paises_id) references MR_Paises (id)
 );
 
-CREATE TABLE MR_Membresias (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL,
-    fecha_inicio DATE,
-    fecha_fin DATE,
-    tipo VARCHAR(50) NOT NULL
+create table MR_TiposUsuario
+(
+    id          int          not null
+        primary key,
+    nombre      varchar(120) not null,
+    descripcion text         null
 );
 
-CREATE TABLE MR_LineaInvestigaciones (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(120) NOT NULL
+create table MR_Universidades
+(
+    id     int          not null
+        primary key,
+    nombre varchar(120) not null
 );
 
--- Crear MR_login
-CREATE TABLE MR_login (
-    id INT PRIMARY KEY,
-    password_hash VARCHAR(255) NOT NULL,
-    ultimo_acceso DATE NOT NULL,
-    MR_Miembros_id INT NOT NULL,
-    token VARCHAR(255)
+create table MR_Miembros
+(
+    id                    int         not null
+        primary key,
+    nombre                varchar(40) not null,
+    apellidos             varchar(40) not null,
+    genero                varchar(20) not null,
+    email                 varchar(50) not null,
+    MR_login_id           int         not null,
+    MR_Universidades_id   int         null,
+    MR_Estados_id         int         null,
+    MR_Paises_id          int         null,
+    MR_EstatusMiembros_id int         null,
+    MR_TiposUsuario_id    int         null,
+    constraint email
+        unique (email),
+    constraint MR_Miembros_MR_Estados_FK
+        foreign key (MR_Estados_id) references MR_Estados (id),
+    constraint MR_Miembros_MR_EstatusMiembros_FK
+        foreign key (MR_EstatusMiembros_id) references MR_EstatusMiembros (id),
+    constraint MR_Miembros_MR_Paises_FK
+        foreign key (MR_Paises_id) references MR_Paises (id),
+    constraint MR_Miembros_MR_TiposUsuario_FK
+        foreign key (MR_TiposUsuario_id) references MR_TiposUsuario (id),
+    constraint MR_Miembros_MR_Universidades_FK
+        foreign key (MR_Universidades_id) references MR_Universidades (id)
 );
 
--- Ahora crear MR_Miembros sin claves foráneas
-CREATE TABLE MR_Miembros (
-    id INT PRIMARY KEY,
-    nombre VARCHAR(40) NOT NULL,
-    apellidos VARCHAR(40) NOT NULL,
-    genero VARCHAR(20) NOT NULL,
-    email VARCHAR(50) UNIQUE NOT NULL,
-    MR_login_id INT NOT NULL,
-    MR_Universidades_id INT,
-    MR_Estados_id INT,
-    MR_Paises_id INT,
-    MR_EstatusMiembros_id INT,
-    MR_TiposUsuario_id INT
+create table MR_ArchivosMiembros
+(
+    id             int          not null
+        primary key,
+    images         varchar(100) null,
+    cv             varchar(100) not null,
+    credencial     varchar(100) not null,
+    MR_Miembros_id int          not null,
+    constraint MR_ArchivosMiembros_MR_Miembros_FK
+        foreign key (MR_Miembros_id) references MR_Miembros (id)
 );
 
-CREATE TABLE MR_MiembrosInvestigaciones (
-    MR_Miembros_id INT NOT NULL,
-    MR_LineaInvestigaciones_id INT NOT NULL
+create table MR_MiembrosInvestigaciones
+(
+    MR_Miembros_id             int not null,
+    MR_LineaInvestigaciones_id int not null,
+    constraint MR_MiembrosInvestigaciones_MR_LineaInvestigaciones_FK
+        foreign key (MR_LineaInvestigaciones_id) references MR_LineaInvestigaciones (id),
+    constraint MR_MiembrosInvestigaciones_MR_Miembros_FK
+        foreign key (MR_Miembros_id) references MR_Miembros (id)
 );
 
-CREATE TABLE MR_MiembrosMembresias (
-    MR_Miembros_id INT NOT NULL,
-    MR_Membresias_id INT NOT NULL
+create table MR_MiembrosMembresias
+(
+    MR_Miembros_id   int not null,
+    MR_Membresias_id int not null,
+    constraint MR_MiembrosMembresias_MR_Membresias_FK
+        foreign key (MR_Membresias_id) references MR_Membresias (id),
+    constraint MR_MiembrosMembresias_MR_Miembros_FK
+        foreign key (MR_Miembros_id) references MR_Miembros (id)
 );
 
-CREATE TABLE MR_ArchivosMiembros (
-    id INT PRIMARY KEY,
-    images VARCHAR(100),
-    cv VARCHAR(100) NOT NULL,
-    credencial VARCHAR(100) NOT NULL,
-    MR_Miembros_id INT NOT NULL
+create table MR_Tokens
+(
+    id             int auto_increment
+        primary key,
+    token          varchar(255)         not null,
+    token_type     varchar(50)          not null,
+    expired        tinyint(1) default 0 not null,
+    revoked        tinyint(1) default 0 not null,
+    MR_Miembros_id int                  not null,
+    constraint unique_token
+        unique (token),
+    constraint MR_Tokens_MR_Miembros_FK
+        foreign key (MR_Miembros_id) references MR_Miembros (id)
+            on delete cascade
 );
 
--- Ahora agregar las restricciones de claves foráneas
-ALTER TABLE MR_Estados ADD CONSTRAINT MR_Estados_MR_Paises_FK FOREIGN KEY (MR_Paises_id) REFERENCES MR_Paises(id);
+create index idx_miembro_token
+    on MR_Tokens (MR_Miembros_id);
 
-ALTER TABLE MR_login ADD CONSTRAINT MR_login_MR_Miembros_FK FOREIGN KEY (MR_Miembros_id) REFERENCES MR_Miembros(id);
+create index idx_token
+    on MR_Tokens (token);
 
-ALTER TABLE MR_Miembros 
-    ADD CONSTRAINT MR_Miembros_MR_Paises_FK FOREIGN KEY (MR_Paises_id) REFERENCES MR_Paises(id),
-    ADD CONSTRAINT MR_Miembros_MR_Estados_FK FOREIGN KEY (MR_Estados_id) REFERENCES MR_Estados(id),
-    ADD CONSTRAINT MR_Miembros_MR_TiposUsuario_FK FOREIGN KEY (MR_TiposUsuario_id) REFERENCES MR_TiposUsuario(id),
-    ADD CONSTRAINT MR_Miembros_MR_EstatusMiembros_FK FOREIGN KEY (MR_EstatusMiembros_id) REFERENCES MR_EstatusMiembros(id),
-    ADD CONSTRAINT MR_Miembros_MR_login_FK FOREIGN KEY (MR_login_id) REFERENCES MR_login(id),
-    ADD CONSTRAINT MR_Miembros_MR_Universidades_FK FOREIGN KEY (MR_Universidades_id) REFERENCES MR_Universidades(id);
+create table MR_login
+(
+    id             int          not null
+        primary key,
+    password_hash  varchar(255) not null,
+    ultimo_acceso  date         not null,
+    MR_Miembros_id int          not null,
+    constraint MR_login_MR_Miembros_FK
+        foreign key (MR_Miembros_id) references MR_Miembros (id)
+);
 
-ALTER TABLE MR_MiembrosInvestigaciones 
-    ADD CONSTRAINT MR_MiembrosInvestigaciones_MR_Miembros_FK FOREIGN KEY (MR_Miembros_id) REFERENCES MR_Miembros(id),
-    ADD CONSTRAINT MR_MiembrosInvestigaciones_MR_LineaInvestigaciones_FK FOREIGN KEY (MR_LineaInvestigaciones_id) REFERENCES MR_LineaInvestigaciones(id);
+alter table MR_Miembros
+    add constraint MR_Miembros_MR_login_FK
+        foreign key (MR_login_id) references MR_login (id);
 
-ALTER TABLE MR_MiembrosMembresias 
-    ADD CONSTRAINT MR_MiembrosMembresias_MR_Miembros_FK FOREIGN KEY (MR_Miembros_id) REFERENCES MR_Miembros(id),
-    ADD CONSTRAINT MR_MiembrosMembresias_MR_Membresias_FK FOREIGN KEY (MR_Membresias_id) REFERENCES MR_Membresias(id);
-
-ALTER TABLE MR_ArchivosMiembros 
-    ADD CONSTRAINT MR_ArchivosMiembros_MR_Miembros_FK FOREIGN KEY (MR_Miembros_id) REFERENCES MR_Miembros(id);
