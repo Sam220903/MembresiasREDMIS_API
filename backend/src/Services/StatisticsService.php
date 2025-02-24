@@ -13,7 +13,7 @@ class StatisticsService{
     public function getStatistics(){
 
         // Al ser una consulta de selección, no es necesario hacer una preparación previa
-        $sql = "SELECT CONCAT(m.nombre, ' ', m.apellidos) AS nombre_miembro, m.genero, m.email, u.nombre AS universidad, e.nombre AS estado, p.nombre AS pais, em.nombre AS estatus, tu.nombre AS tipo_usuario
+        $sql = "SELECT CONCAT(m.nombre, ' ', m.apellidos) AS nombre, m.genero, u.nombre AS universidad, e.nombre AS estado, p.nombre AS pais, em.nombre AS estatus, tu.nombre AS tipo_usuario
                 FROM MR_Miembros m
                 JOIN MR_Universidades u ON m.MR_Universidades_id = u.id
                 JOIN MR_Estados e ON m.MR_Estados_id = e.id
