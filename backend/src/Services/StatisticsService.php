@@ -13,7 +13,7 @@ class StatisticsService{
     public function getStatistics(){
 
         // Al ser una consulta de selección, no es necesario hacer una preparación previa
-        $sql = "";
+        $sql = "SELECT * FROM MR_Membresias;";
         $result = $this->conn->query($sql);
         return $result->fetchAll(PDO::FETCH_ASSOC);
     }

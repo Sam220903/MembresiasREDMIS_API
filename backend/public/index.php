@@ -29,9 +29,9 @@ include_once '../src/config/config.php';
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
 
 // Instancia de objetos para manejo de autorizaciones y roles
-$jwt = new JWT("1234567");
-$auth_middleware = new AuthMiddleware($jwt, $connection["login"]);
-$token_gateway = new TokenGateway($database);
+# $jwt = new JWT("1234567");
+# $auth_middleware = new AuthMiddleware($jwt, $connection["login"]);
+# $token_gateway = new TokenGateway($database);
 
 
 
@@ -48,6 +48,7 @@ if (!is_numeric($id)) {
     $id = null;
 }
 
+/* 
 // Manejo de autorización
 try {
     $user_payload = $auth_middleware->handleRequest($route, $_SERVER["REQUEST_METHOD"], $tokenGateway, $id);
@@ -56,6 +57,7 @@ try {
     echo json_encode(["error" => $e->getMessage()]);
     exit();
 }
+*/
 
 // Este switch se encarga de manejar las rutas de la API
 switch ($route){
