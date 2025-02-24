@@ -208,9 +208,8 @@ create index idx_miembro_token
 create index idx_token
     on MR_Tokens (token);
 
-
 -- Datos de prueba para la base de datos
- -- Datos para MR_EstatusMiembros
+-- Datos para MR_EstatusMiembros
 INSERT INTO MR_EstatusMiembros (nombre, descripcion) VALUES
     ('Activo', 'Miembro con todos los derechos vigentes'),
     ('Inactivo', 'Miembro temporalmente inactivo'),
@@ -264,21 +263,22 @@ INSERT INTO MR_Universidades (nombre, MR_Paises_id) VALUES
     ('Universidad de Buenos Aires', 4),
     ('Universidad Nacional de Colombia', 5);
 
--- Datos para MR_Login
-INSERT INTO MR_Login (email, password_hash, activo) VALUES
-    ('admin@example.com', '21232f297a57a5a743894a0e4a801fc3', true),    -- password: "admin"
-    ('usuario1@example.com', 'ee11cbb19052e40b07aac0ca060c23ee', true), -- password: "user"
-    ('usuario2@example.com', '5f4dcc3b5aa765d61d8327deb882cf99', true), -- password: "password"
-    ('usuario3@example.com', '827ccb0eea8a706c4c34a16891f84e7b', true), -- password: "12345"
-    ('usuario4@example.com', 'e10adc3949ba59abbe56e057f20f883e', true); -- password: "123456"
-
 -- Datos para MR_Miembros
-INSERT INTO MR_Miembros (nombre, apellidos, genero, MR_Login_id, MR_Universidades_id, MR_Estados_id, MR_Paises_id, MR_EstatusMiembros_id, MR_TiposUsuario_id) VALUES
-    ('Juan', 'Pérez García', 'Masculino', 1, 1, 1, 1, 1, 1),        -- Administrador
-    ('María', 'López Martínez', 'Femenino', 2, 2, 2, 1, 1, 2),      -- Usuario Regular
-    ('Robert', 'Smith Johnson', 'Masculino', 3, 3, 4, 2, 1, 2),     -- Usuario Regular
-    ('Ana', 'García Rodríguez', 'Femenino', 4, 4, 5, 3, 1, 2),      -- Usuario Regular
-    ('Carlos', 'Martínez López', 'Masculino', 5, 5, 6, 4, 1, 2);    -- Usuario Regular
+INSERT INTO MR_Miembros (nombre, apellidos, genero, MR_Universidades_id, MR_Estados_id, MR_Paises_id, MR_EstatusMiembros_id, MR_TiposUsuario_id) VALUES
+    ('Juan', 'Pérez García', 'Masculino', 1, 1, 1, 1, 1),        -- Administrador
+    ('María', 'López Martínez', 'Femenino', 2, 2, 1, 1, 2),      -- Usuario Regular
+    ('Robert', 'Smith Johnson', 'Masculino', 3, 4, 2, 1, 2),     -- Usuario Regular
+    ('Ana', 'García Rodríguez', 'Femenino', 4, 5, 3, 1, 2),      -- Usuario Regular
+    ('Carlos', 'Martínez López', 'Masculino', 5, 6, 4, 1, 2);    -- Usuario Regular
+
+-- Datos para MR_Login
+INSERT INTO MR_Login (MR_Miembros_id, email, password_hash, activo) VALUES
+    (1, 'admin@example.com', '21232f297a57a5a743894a0e4a801fc3', true),    -- password: "admin"
+    (2, 'usuario1@example.com', 'ee11cbb19052e40b07aac0ca060c23ee', true), -- password: "user"
+    (3, 'usuario2@example.com', '5f4dcc3b5aa765d61d8327deb882cf99', true), -- password: "password"
+    (4, 'usuario3@example.com', '827ccb0eea8a706c4c34a16891f84e7b', true), -- password: "12345"
+    (5, 'usuario4@example.com', 'e10adc3949ba59abbe56e057f20f883e', true); -- password: "123456"
+
 -- Datos para MR_ArchivosMiembros
 INSERT INTO MR_ArchivosMiembros (images, cv, credencial, MR_Miembros_id) VALUES
     ('perfil1.jpg', 'cv1.pdf', 'cred1.pdf', 1),
@@ -314,7 +314,7 @@ INSERT INTO MR_SolicitudesMembresia (MR_Miembros_id, MR_Membresias_id, estado, f
 -- Datos para MR_Tokens (ejemplos de tokens JWT)
 INSERT INTO MR_Tokens (token, token_type, expired, revoked, MR_Miembros_id, fecha_expiracion) VALUES
     ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', 'ACCESS', false, false, 1, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 DAY)),
-    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', 'REFRESH', false, false, 1, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
-    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', 'ACCESS', false, false, 2, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 DAY)),
-    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', 'REFRESH', false, false, 2, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
-    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', 'ACCESS', true, true, 3, '2024-02-01 00:00:00');
+    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ7...', 'REFRESH', false, false, 1, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
+    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ6...', 'ACCESS', false, false, 2, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 DAY)),
+    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ5...', 'REFRESH', false, false, 2, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
+    ('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ4...', 'ACCESS', true, true, 3, '2024-02-01 00:00:00');
