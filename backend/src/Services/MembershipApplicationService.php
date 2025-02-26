@@ -18,7 +18,7 @@ class MembershipApplicationService {
             throw new \Exception("Ya existe una solicitud de membresía pendiente para este usuario.");
         }
 
-        // Registrar la solicitud de membresía
+        // Registrar la solicitud de membresía en MR_SolicitudesMembresia
         return $this->membershipApplicationModel->create($userId, $data);
     }
 }

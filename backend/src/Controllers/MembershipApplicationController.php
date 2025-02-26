@@ -23,7 +23,7 @@ class MembershipApplicationController {
         }
 
         $data = json_decode(file_get_contents('php://input'), true);
-        if (!isset($data['MR_Membresias_id']) || !isset($data['telefono']) || !isset($data['cv'])) {
+        if (!isset($data['MR_Membresias_id']) || !isset($data['cv']) || !isset($data['telefono'])) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Todos los campos requeridos deben ser proporcionados."]);
             exit;
@@ -31,7 +31,7 @@ class MembershipApplicationController {
 
         try {
             $result = $this->membershipApplicationService->createApplication($user['id'], $data);
-            http_response_code(200);
+            http_response_code(201);
             echo json_encode(["status" => "success", "message" => "Solicitud de membresía enviada exitosamente.", "data" => $result]);
         } catch (\Exception $e) {
             http_response_code(400);

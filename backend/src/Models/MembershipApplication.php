@@ -13,17 +13,17 @@ class MembershipApplication {
     }
 
     public function findPendingRequestByUserId($userId) {
-        $stmt = $this->pdo->prepare("SELECT * FROM MR_Miembros WHERE id = :userId AND MR_EstatusMiembros_id = 1");
+        $stmt = $this->pdo->prepare("SELECT * FROM MR_SolicitudesMembresia WHERE MR_Miembros_id = :userId AND estado = 'PENDIENTE'");
         $stmt->execute([':userId' => $userId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function create($userId, $data) {
-        $stmt = $this->pdo->prepare("INSERT INTO MR_Miembros (id, MR_Membresias_id, telefono, MR_EstatusMiembros_id) VALUES (:userId, :membershipId, :telefono, 1)");
+        $stmt = $this->pdo->prepare("INSERT INTO MR_SolicitudesMembresia (MR_Miembros_id, MR_Membresias_id, estado, comentarios) VALUES (:userId, :membershipId, 'PENDIENTE', :comentarios)");
         $stmt->execute([
             ':userId' => $userId,
             ':membershipId' => $data['MR_Membresias_id'],
-            ':telefono' => $data['telefono']
+            ':comentarios' => $data['comentarios'] ?? ''
         ]);
 
         // Registrar CV en MR_ArchivosMiembros
