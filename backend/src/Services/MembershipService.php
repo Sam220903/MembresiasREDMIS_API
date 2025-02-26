@@ -3,52 +3,26 @@
 namespace Backend\Services;
 
 use App\Models\MembershipRequest;
-use App\Models\User;
 
 class MembershipService {
     private $membershipRequestModel;
-    private $userModel;
 
     public function __construct() {
         $this->membershipRequestModel = new MembershipRequest();
-        $this->userModel = new User();
     }
 
-    public function acceptRequest($id) {
+    public function updateRequestStatus($id, $status, $reason = null) {
         $request = $this->membershipRequestModel->findById($id);
 
         if (!$request) {
             throw new \Exception("Solicitud no encontrada.");
         }
 
-        if ($request['status'] !== 'pendiente') {
+        if ($request['estado'] !== 'PENDIENTE') {
             throw new \Exception("La solicitud ya ha sido procesada.");
         }
 
-        // Actualizar estado de la solicitud
-        $this->membershipRequestModel->updateStatus($id, 'aceptada');
-
-        // Crear el usuario como miembro activo
-        $newMember = $this->userModel->createMember($request);
-
-        return [
-            'message' => 'Membresía creada exitosamente.',
-            'member' => $newMember
-        ];
-    }
-
-    public function rejectRequest($id, $reason) {
-        $request = $this->membershipRequestModel->findById($id);
-
-        if (!$request) {
-            throw new \Exception("Solicitud no encontrada.");
-        }
-
-        if ($request['status'] !== 'pendiente') {
-            throw new \Exception("La solicitud ya ha sido procesada.");
-        }
-
-        // Actualizar estado de la solicitud con la razón de rechazo
-        $this->membershipRequestModel->updateStatus($id, 'rechazada', $reason);
+        // Actualizar estado de la solicitud con la razón si es rechazada
+        return $this->membershipRequestModel->updateStatus($id, $status, $reason);
     }
 }
