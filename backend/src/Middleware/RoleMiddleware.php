@@ -2,19 +2,19 @@
 
 class RoleMiddleware
 {
-    private array $permissions;
+    private $permissions;
 
-    public  function __construct()
+    public function __construct()
     {
         $this->permissions = [
-          'admin' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-          'user' => ['GET', 'POST', 'PATCH'],
+          1 => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+          2 => ['GET', 'POST', 'PATCH'],
         ];
     }
 
     public function checkPermissions(array $payload, string $method)
     {
-        $user_role = $payload['role'] ?? 'user';
+        $user_role = $payload['role'] ?? 2;
         $allowed_methods = $this->permissions[$user_role] ?? [];
         return in_array($method, $allowed_methods);
     }

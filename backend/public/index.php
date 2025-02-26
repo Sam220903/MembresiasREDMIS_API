@@ -23,7 +23,7 @@ include_once '../src/Config/header.php';
 include_once '../src/config/config.php';
 
 // Firma JWT, esta clave debe de ser una variable de entorno en producción
-$jwt = new Jwt('123456');
+$jwt = new Jwt('1234567');
 
 // Única conexión a la base de datos
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
@@ -31,9 +31,7 @@ $database = new Database($connection["servername"], $connection["username"], $co
 $token_gateway = new TokenService($database);
 
 // Instancia de objetos para manejo de autorizaciones y roles
-$auth_middleware = new AuthMiddleware($jwt, $connection["login"]);
-
-
+$auth_middleware = new AuthMiddleware($jwt, ['login']);
 
 
 // Encuentra la ruta y el id en la URL
@@ -51,7 +49,7 @@ if (!is_numeric($id)) {
 
 // Manejo de autorización
 try {
-    $user_payload = $auth_middleware->handleRequest($route, $_SERVER["REQUEST_METHOD"], $tokenGateway, $id);
+    $user_payload = $auth_middleware->handleRequest($route, $_SERVER["REQUEST_METHOD"], $token_gateway, $id);
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(["error" => $e->getMessage()]);
@@ -66,6 +64,20 @@ switch ($route){
         break;
 
     // Agregar más rutas aquí con su case:
+
+
+    // Ruta de inicio de sesión
+    case "login":
+        $user_service = new UserService($database);
+        $controller = new LoginController($user_service, $jwt, $token_gateway);
+        $controller->processRequest($_SERVER["REQUEST_METHOD"]);
+        break;
+
+    // Ruta de cierre de sesión
+    case 'logout':
+        $controller = new LogoutController($token_gateway);
+        $controller->processRequest($_SERVER["REQUEST_METHOD"]);
+        break;
 
     default:
         http_response_code(404);
