@@ -23,9 +23,9 @@ class MembershipRequestController {
         }
 
         try {
-            $result = $this->membershipService->acceptRequest($id);
+            $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
             http_response_code(200);
-            echo json_encode(["status" => "success", "message" => "Solicitud aceptada exitosamente", "data" => $result]);
+            echo json_encode(["status" => "success", "message" => "Solicitud aprobada exitosamente", "data" => $result]);
         } catch (\Exception $e) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => $e->getMessage()]);
@@ -50,7 +50,7 @@ class MembershipRequestController {
         }
 
         try {
-            $this->membershipService->rejectRequest($id, $data['reason']);
+            $this->membershipService->updateRequestStatus($id, 'RECHAZADA', $data['reason']);
             http_response_code(200);
             echo json_encode(["status" => "success", "message" => "Solicitud rechazada exitosamente."]);
         } catch (\Exception $e) {
