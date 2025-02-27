@@ -1,4 +1,4 @@
-<?php
+<?php 
 global $connection;
 
 spl_autoload_register(function ($class) {
@@ -7,7 +7,7 @@ spl_autoload_register(function ($class) {
         __DIR__ . "/../src/Controllers/",
         __DIR__ . "/../src/Services/",
         __DIR__ . "/../src/Models/",
-        __DIR__ . "/../src/Middleware/"
+        __DIR__ . "/../src/Middleware/",
     ];
 
     foreach ($directories as $directory) {
@@ -24,8 +24,10 @@ include_once '../src/config/config.php';
 
 // Única conexión a la base de datos
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
+$service = new MembersService($database);
+$controller = new MembersController($service);
 
-// Encuentra la ruta y el id en la URL
+// Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $parts = explode('/', trim($path, '/'));
 $lastIndex = count($parts) - 1;
@@ -38,18 +40,19 @@ if (!is_numeric($id)) {
     $id = null;
 }
 
-
-// Este Switch se encarga de manejar las rutas de la API
-switch ($route){
-    // Ruta para obtener todos los usuarios
+// Manejo de rutas de la API
+switch ($route) {
     case "test":
         echo json_encode(["message" => "Este es el endpoint de prueba"]);
         break;
-
-    // Agregar más rutas aquí con su case:
+        
+    case "members":
+        $controller->processRequest($_SERVER["REQUEST_METHOD"], $id);
+        break;
 
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
         break;
 }
+?>
