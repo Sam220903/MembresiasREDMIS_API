@@ -24,6 +24,8 @@ include_once '../src/config/config.php';
 
 // Única conexión a la base de datos
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
+$dbConnection=$database->getConnection();
+
 
 // Encuentra la ruta y el id en la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -47,6 +49,22 @@ switch ($route){
         break;
 
     // Agregar más rutas aquí con su case:
+
+        case "miembros": 
+            $miembrosService = new MiembrosService($dbConnection);
+            $miembrosController = new MiembrosController($miembrosService);
+
+            $data=$_POST;
+            if (empty($data)){
+                $data= (array) json_decode(file_get_contents("PHP://input"),true);
+            }
+            try {
+                $id=$miembrosController->postMiembro($_SERVER,$data);
+                echo json_encode(["message" => "El id ".$id."fue insertado"]);
+            } catch (Exception $e) {
+                echo json_encode(["error" => $e->getMessage()]);
+            }
+            break;
 
     default:
         http_response_code(404);
