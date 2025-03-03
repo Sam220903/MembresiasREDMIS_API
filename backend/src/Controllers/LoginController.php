@@ -41,12 +41,12 @@ class LoginController
             return;
         }
 
-        $user =  $this->user_service->findByEmail($data['email']);
+        $user = $this->user_service->findByEmail($data['email']);
         if (!$user) {
             http_response_code(404);
             echo json_encode(['error'=>'Email not found']);
             return;
-        } else if (!password_verify($data['password'], $user['password_hash'])) {
+        } else if (md5($data['password']) !== $user['password_hash']) {
             http_response_code(401);
             echo json_encode(['error'=>'Wrong Password']);
             return;
@@ -58,13 +58,10 @@ class LoginController
             "role" => $user['rol'],
         );
 
-        $token = $this -> jwt -> createToken($payload);
-        $this -> token_service -> revokeAllTokens($user['id']);
-        $this -> token_service -> saveToken($user['id'], $token, "BEARER", false, false);
+        $token = $this->jwt->createToken($payload);
+        $this->token_service->revokeAllTokens($user['id']);
+        $this->token_service->saveToken($user['id'], $token, "BEARER", false, false);
 
         echo json_encode(['user_id'=>$user['id'],'token'=>$token]);
-
-
     }
-
 }

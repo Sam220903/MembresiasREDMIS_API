@@ -10,13 +10,17 @@ class TokenService{
 
     public function saveToken($userID, $token, $type, $expired, $revoked)
     {
-        $sql = "INSERT INTO MR_Tokens (token, token_type, expired, revoked, MR_Miembros_id) VALUES (:token, :type, :expired, :revoked, :user_id)";
+        // Set expiration to 24 hours from now by default
+        $expirationDate = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+        $sql = "INSERT INTO MR_Tokens (token, token_type, expired, revoked, MR_Miembros_id, fecha_expiracion) VALUES (:token, :type, :expired, :revoked, :user_id, :fecha_expiracion)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(":token", $token);
         $stmt->bindValue(":type", $type);
         $stmt->bindValue(":expired", $expired, PDO::PARAM_BOOL);
         $stmt->bindValue(":revoked", $revoked, PDO::PARAM_BOOL);
         $stmt->bindValue(":user_id", $userID, PDO::PARAM_INT);
+        $stmt->bindValue(":fecha_expiracion", $expirationDate);
         $stmt->execute();
     }
 
@@ -60,9 +64,11 @@ class TokenService{
 
     public function revokeAllTokens($userID)
     {
-        $tokens =$this->findValidTokensByUser($userID);
-        foreach ($tokens as $token) {
-            $this->expireAndRevokeTokens($token["token"]);
-        }
+        $sql = "UPDATE MR_Tokens SET revoked = true WHERE MR_Miembros_id = :user_id AND revoked = false";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':user_id', $userID);
+        
+        return $stmt->execute();
     }
 }
