@@ -96,6 +96,22 @@ switch ($route){
         $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
         break;
 
+        case "miembros": 
+            $miembrosService = new MiembrosService($dbConnection);
+            $miembrosController = new MiembrosController($miembrosService);
+
+            $data=$_POST;
+            if (empty($data)){
+                $data= (array) json_decode(file_get_contents("PHP://input"),true);
+            }
+            try {
+                $id=$miembrosController->postMiembro($_SERVER,$data);
+                echo json_encode(["message" => "El id ".$id."fue insertado"]);
+            } catch (Exception $e) {
+                echo json_encode(["error" => $e->getMessage()]);
+            }
+            break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
