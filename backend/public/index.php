@@ -81,6 +81,12 @@ switch ($route){
         }
         break;
 
+    case "statistics":
+        $service = new StatisticsService($database);
+        $controller = new StatisticsController($service);  // Aumentar payload para autorización 
+        $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
+        break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
