@@ -29,10 +29,7 @@ $jwt = new Jwt('1234567');
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
 $dbConnection = $database->getConnection(); // Ensure you get the connection object
 
-// Instancia de objetos para manejo de autorizaciones y roles
-# $jwt = new JWT("1234567");
-# $auth_middleware = new AuthMiddleware($jwt, $connection["login"]);
-# $token_gateway = new TokenGateway($database);
+$token_gateway = new TokenService($database);
 
 // Instancia de objetos para manejo de autorizaciones y roles
 $auth_middleware = new AuthMiddleware($jwt, ['login']);
@@ -51,7 +48,6 @@ if (!is_numeric($id)) {
     $id = null;
 }
 
-/* 
 // Manejo de autorización
 try {
     $user_payload = $auth_middleware->handleRequest($route, $_SERVER["REQUEST_METHOD"], $token_gateway, $id);
@@ -60,7 +56,6 @@ try {
     echo json_encode(["error" => $e->getMessage()]);
     exit();
 }
-*/
 
 // Este switch se encarga de manejar las rutas de la API
 switch ($route){
@@ -70,6 +65,18 @@ switch ($route){
         break;
 
     // Agregar más rutas aquí con su case:
+            // Ruta de inicio de sesión
+    case "login":
+        $user_service = new UserService($database);
+        $controller = new LoginController($user_service, $jwt, $token_gateway);
+        $controller->processRequest($_SERVER["REQUEST_METHOD"]);
+        break;
+
+    // Ruta de cierre de sesión
+    case 'logout':
+        $controller = new LogoutController($token_gateway);
+        $controller->processRequest($_SERVER["REQUEST_METHOD"]);
+        break;
 
     case "membresias":
         $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
