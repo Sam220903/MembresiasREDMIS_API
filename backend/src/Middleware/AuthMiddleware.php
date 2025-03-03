@@ -29,9 +29,9 @@
 
     class AuthMiddleware
     {
-        private JWT $jwt;
-        private array $excluded_routes;
-        private RoleMiddleware $role_middleware;
+        private $jwt;
+        private $excluded_routes;
+        private $role_middleware;
 
         public function __construct(JWT $jwt, array $excluded_routes)
         {
@@ -40,7 +40,7 @@
             $this->role_middleware = new RoleMiddleware();
         }
         
-        public function handleRequest(string $route, string $method, TokenGateway $token_gateway, ?string $id = null)
+        public function handleRequest(string $route, string $method, TokenService $token_gateway, string $id = null)
         {
             if (in_array($route, $this->excluded_routes) || $route === 'login') {
                 return [];
@@ -49,7 +49,8 @@
             $headers = getallheaders();
             $auth_header = $headers['Authorization'] ?? '';
 
-            if (!str_starts_with($auth_header, 'Bearer ')) {
+
+            if (strpos($auth_header, 'Bearer ') !== 0) {            // Si se hace el cambio a PHP 8, se puede usar str_starts_with
                 http_response_code(401);
                 echo json_encode(['error' => 'Token no proporcionado']);
                 exit();

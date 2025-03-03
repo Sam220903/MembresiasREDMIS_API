@@ -22,8 +22,8 @@ spl_autoload_register(function ($class) {
 include_once '../src/Config/header.php';
 include_once '../src/config/config.php';
 
-
-
+// Firma JWT, esta clave debe de ser una variable de entorno en producción
+$jwt = new Jwt('1234567');
 
 // Única conexión a la base de datos
 $database = new Database($connection["servername"], $connection["username"], $connection["password"], $connection["dbname"]);
@@ -34,6 +34,8 @@ $dbConnection = $database->getConnection(); // Ensure you get the connection obj
 # $auth_middleware = new AuthMiddleware($jwt, $connection["login"]);
 # $token_gateway = new TokenGateway($database);
 
+// Instancia de objetos para manejo de autorizaciones y roles
+$auth_middleware = new AuthMiddleware($jwt, ['login']);
 
 
 // Encuentra la ruta y el id en la URL
@@ -52,7 +54,7 @@ if (!is_numeric($id)) {
 /* 
 // Manejo de autorización
 try {
-    $user_payload = $auth_middleware->handleRequest($route, $_SERVER["REQUEST_METHOD"], $tokenGateway, $id);
+    $user_payload = $auth_middleware->handleRequest($route, $_SERVER["REQUEST_METHOD"], $token_gateway, $id);
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(["error" => $e->getMessage()]);
