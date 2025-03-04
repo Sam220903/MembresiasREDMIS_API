@@ -106,15 +106,20 @@ switch ($route){
         }
 
         try {
-            $idUser=$miembrosController->handleRequest($_SERVER,$id,$data);
-            if ($id){
+            $idUser = $miembrosController->handleRequest($_SERVER,$id,$data);
+            if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                if ($id) {
+                    $response = $miembrosController->getMemberById($id);
+                    echo json_encode($response);
+                } else {
+                    $response = $miembrosController->getAllMembers();
+                    echo json_encode($response);
+                }
+            } elseif ($id){
                 echo json_encode(["message" => "El id ".$id." fue eliminado"]);
-
-
             } 
-            else {
+            else if ($idUser){
                 echo json_encode(["message" => "El id ".$idUser." fue insertado"]);
-
             }
             
         } catch (Exception $e) {
