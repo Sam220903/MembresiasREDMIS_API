@@ -1,4 +1,4 @@
-<?php
+<?php 
 global $connection;
 
 spl_autoload_register(function ($class) {
@@ -7,7 +7,7 @@ spl_autoload_register(function ($class) {
         __DIR__ . "/../src/Controllers/",
         __DIR__ . "/../src/Services/",
         __DIR__ . "/../src/Models/",
-        __DIR__ . "/../src/Middleware/"
+        __DIR__ . "/../src/Middleware/",
     ];
 
     foreach ($directories as $directory) {
@@ -35,7 +35,7 @@ $token_gateway = new TokenService($database);
 $auth_middleware = new AuthMiddleware($jwt, ['login']);
 
 
-// Encuentra la ruta y el id en la URL
+// Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $parts = explode('/', trim($path, '/'));
 $lastIndex = count($parts) - 1;
@@ -129,3 +129,4 @@ switch ($route){
         echo json_encode(["message" => "Endpoint no encontrado"]);
         break;
 }
+?>
