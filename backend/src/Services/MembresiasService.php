@@ -28,4 +28,24 @@ class MembresiasService {
 
         return $membresias;
     }
+
+    public function getMembresia($id) {
+        $query = "SELECT * FROM MR_Membresias WHERE id = :id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $membresia = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $membresia ?: null;
+    }
+
+    public function mejoraMembresia($id, $data) {
+        $query = "UPDATE MR_Membresias 
+        SET tipo = :tipo
+        WHERE id = :id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(':tipo', $data["tipo"]);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 }
