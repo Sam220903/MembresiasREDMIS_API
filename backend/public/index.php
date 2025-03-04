@@ -58,13 +58,25 @@ switch ($route){
             if (empty($data)){
                 $data= (array) json_decode(file_get_contents("PHP://input"),true);
             }
+
             try {
-                $id=$miembrosController->postMiembro($_SERVER,$data);
-                echo json_encode(["message" => "El id ".$id."fue insertado"]);
+                $idUser=$miembrosController->handleRequest($_SERVER,$id,$data);
+                if ($id){
+                    echo json_encode(["message" => "El id ".$id." fue eliminado"]);
+
+
+                } 
+                else {
+                    echo json_encode(["message" => "El id ".$idUser." fue insertado"]);
+
+                }
+                
             } catch (Exception $e) {
                 echo json_encode(["error" => $e->getMessage()]);
             }
             break;
+
+          
 
     default:
         http_response_code(404);

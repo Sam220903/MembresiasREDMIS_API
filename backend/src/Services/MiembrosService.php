@@ -35,6 +35,12 @@
 
         $stmt->execute(); 
     }
+    public function deleteMiembro($id) {
+        $query = "DELETE FROM MR_Miembros WHERE id = :id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 
 }
 
