@@ -80,8 +80,13 @@ switch ($route){
     case "membresias":
         $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
         $membresiasController = new MembresiasController($membresiasService);
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+
         try {
-            $response = $membresiasController->getMembresias($_SERVER);
+            $response = $membresiasController->handleRequest($_SERVER, $id, $data);
             echo json_encode($response);
         } catch (Exception $e) {
             http_response_code(400);

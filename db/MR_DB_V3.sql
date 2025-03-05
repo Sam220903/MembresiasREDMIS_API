@@ -18,10 +18,7 @@ create table MR_Membresias
     id           int auto_increment
         primary key,
     nombre       varchar(120)         not null,
-    fecha_inicio date                 null,
-    fecha_fin    date                 null,
-    tipo         varchar(50)          not null,
-    activa       tinyint(1) default 1 not null
+    tipo         varchar(50)          not null
 );
 
 create table MR_Paises
@@ -225,11 +222,11 @@ INSERT INTO MR_LineaInvestigaciones (nombre) VALUES
     ('Nanotecnología');
 
 -- Datos para MR_Membresias
-INSERT INTO MR_Membresias (nombre, fecha_inicio, fecha_fin, tipo, activa) VALUES
-    ('Membresía Básica', '2024-01-01', '2024-12-31', 'BASICA', true),
-    ('Membresía Premium', '2024-01-01', '2024-12-31', 'PREMIUM', true),
-    ('Membresía Estudiante', '2024-01-01', '2024-12-31', 'ESTUDIANTE', true),
-    ('Membresía Corporativa', '2024-01-01', '2024-12-31', 'CORPORATIVA', true);
+INSERT INTO MR_Membresias (nombre, tipo) VALUES
+    ('Membresía Básica', 'BASICA'),
+    ('Membresía Premium', 'PREMIUM'),
+    ('Membresía Estudiante', 'ESTUDIANTE'),
+    ('Membresía Corporativa', 'CORPORATIVA');
 
 -- Datos para MR_Paises
 INSERT INTO MR_Paises (nombre, codigo_iso) VALUES

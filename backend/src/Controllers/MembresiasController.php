@@ -9,8 +9,34 @@ class MembresiasController{
 
     }
 
-    public function getMembresias($request){
-        if ($request['REQUEST_METHOD'] !== 'GET') throw new Exception('El endpoint no soporta este método');
+    public function handleRequest($request, $id, $data){
+        $method = $request['REQUEST_METHOD'];
+
+        switch ($method) {
+            case 'GET':
+                return $this->getMembresias();
+            
+            case 'POST':
+                return $this->postMembresia($data);
+
+            case 'DELETE':
+                return $this->deleteMembresia($id);
+
+            default:
+                throw new Exception('denegado');
+        }
+    }
+
+    public function getMembresias(){
         return $this->membresiasService->getMembresias();
+    }
+
+    public function postMembresia($data){
+        return $this->membresiasService->postMembresias($data);
+    }
+
+    public function deleteMembresia($id){
+        if (empty($id)) throw new Exception('ID requerido');
+        return $this->membresiasService->deleteMembresias($id);
     }
 }
