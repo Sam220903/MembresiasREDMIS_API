@@ -3,41 +3,35 @@
     class MiembrosController{
         private $miembrosService;
         public function __construct($miembrosService){
-
-            $this->miembrosService=$miembrosService;
-
-        
-
+            $this->miembrosService = $miembrosService;
         }
+
         public function handleRequest($request, $id, $data){
+            $method = $request['REQUEST_METHOD'];
 
-            if ($_SERVER['REQUEST_METHOD'] === 'GET'){
+            switch ($method) {
+                case 'GET':
+                    return $id ? $this->getMemberById($id) : $this->getAllMembers();
+                
+                case 'POST':
+                    return $this->postMiembro($data);
 
-                if ($id){
-                    return $this->getMemberById($id);
-                } else {
-                    return $this->getAllMembers();
-                }
+                case 'DELETE':
+                    return $this->deleteMiembro($id);
 
-            }
-            if ($_SERVER['REQUEST_METHOD'] === 'DELETE'){
+                case 'PATCH':
+                    return $this->updateMember($id, $data);
 
-                return $this -> deleteMiembro($id);
-
-            } 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST'){
-
-                return $this -> postMiembro($data);
-
-            } else {
-                throw new Exception('denegado');
+                default:
+                    throw new Exception('denegado');
             }
         }
-        public function postMiembro ($data){
-            
+
+        public function postMiembro($data){
             return $this->miembrosService->postMiembro($data);
         }
-        public function deleteMiembro( $id) {
+
+        public function deleteMiembro($id) {
             if (empty($id)) throw new Exception('ID requerido');
             return $this->miembrosService->deleteMiembro($id);
         }
@@ -49,8 +43,12 @@
         public function getMemberById($id){
             return $this->miembrosService->getMemberById($id);
         }
-    
+
+        public function updateMember($id, $data){
+            return $this->miembrosService->updateMember($id, $data);
+        }
     }
+?>
 
 
 

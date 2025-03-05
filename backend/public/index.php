@@ -34,7 +34,6 @@ $token_gateway = new TokenService($database);
 // Instancia de objetos para manejo de autorizaciones y roles
 $auth_middleware = new AuthMiddleware($jwt, ['login']);
 
-
 // Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $parts = explode('/', trim($path, '/'));
@@ -65,7 +64,7 @@ switch ($route){
         break;
 
     // Agregar más rutas aquí con su case:
-            // Ruta de inicio de sesión
+    // Ruta de inicio de sesión
     case "login":
         $user_service = new UserService($database);
         $controller = new LoginController($user_service, $jwt, $token_gateway);
@@ -100,38 +99,22 @@ switch ($route){
         $miembrosService = new MiembrosService($dbConnection);
         $miembrosController = new MiembrosController($miembrosService);
 
-        $data=$_POST;
+        $data = $_POST;
         if (empty($data)){
-            $data= (array) json_decode(file_get_contents("PHP://input"),true);
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
 
         try {
-            $idUser = $miembrosController->handleRequest($_SERVER,$id,$data);
-            if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                if ($id) {
-                    $response = $miembrosController->getMemberById($id);
-                    echo json_encode($response);
-                } else {
-                    $response = $miembrosController->getAllMembers();
-                    echo json_encode($response);
-                }
-            } elseif ($id){
-                echo json_encode(["message" => "El id ".$id." fue eliminado"]);
-            } 
-            else if ($idUser){
-                echo json_encode(["message" => "El id ".$idUser." fue insertado"]);
-            }
-            
+            $response = $miembrosController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
         } catch (Exception $e) {
+            http_response_code(400);
             echo json_encode(["error" => $e->getMessage()]);
         }
         break;
-
-          
 
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
         break;
 }
-?>
