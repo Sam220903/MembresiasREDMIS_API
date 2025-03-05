@@ -79,7 +79,7 @@ switch ($route){
 
     case "membresias":
         $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
-        $membresiasController = new MembresiaController($membresiasService);
+        $membresiasController = new MembresiasController($membresiasService);
         try {
             $response = $membresiasController->getMembresias($_SERVER);
             echo json_encode($response);

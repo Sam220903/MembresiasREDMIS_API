@@ -1,6 +1,6 @@
 <?php
 
-class MembresiaController{
+class MembresiasController{
     private $membresiasService;
 
     public function __construct($membresiasService )
