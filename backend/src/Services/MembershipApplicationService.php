@@ -1,14 +1,10 @@
 <?php
 
-namespace Backend\Services;
-
-use App\Models\MembershipApplication;
-
 class MembershipApplicationService {
     private $membershipApplicationModel;
 
-    public function __construct() {
-        $this->membershipApplicationModel = new MembershipApplication();
+    public function __construct($dbConnection) {
+        $this->membershipApplicationModel = new MembershipApplication($dbConnection);
     }
 
     public function createApplication($userId, $data) {

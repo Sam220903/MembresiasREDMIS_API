@@ -1,15 +1,10 @@
 <?php
 
-namespace App\Models;
-
-use App\Config\Database;
-use PDO;
-
 class MembershipApplication {
     private $pdo;
 
-    public function __construct() {
-        $this->pdo = Database::connect();
+    public function __construct($dbConnection) {
+        $this->pdo = $dbConnection;
     }
 
     public function findPendingRequestByUserId($userId) {

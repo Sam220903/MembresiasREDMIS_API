@@ -1,14 +1,10 @@
 <?php
 
-namespace Backend\Services;
-
-use App\Models\MembershipRequest;
-
 class MembershipService {
     private $membershipRequestModel;
 
-    public function __construct() {
-        $this->membershipRequestModel = new MembershipRequest();
+    public function __construct($dbConnection) {
+        $this->membershipRequestModel = new MembershipRequest($dbConnection);
     }
 
     public function updateRequestStatus($id, $status, $reason = null) {
@@ -23,6 +19,6 @@ class MembershipService {
         }
 
         // Actualizar estado de la solicitud con la razón si es rechazada
-        return $this->membershipRequestModel->updateStatus($id, $status, $reason);
+        return $this->membershipRequestModel->updateRequestStatus($id, $status, $reason);
     }
 }

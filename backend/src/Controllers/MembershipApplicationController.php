@@ -1,9 +1,5 @@
 <?php
 
-namespace Backend\Src\Controllers;
-
-use Backend\Services\MembershipApplicationService;
-use App\Middleware\AuthMiddleware;
 
 class MembershipApplicationController {
     private $membershipApplicationService;
@@ -13,7 +9,6 @@ class MembershipApplicationController {
     }
 
     public function registerMembership() {
-        AuthMiddleware::validate(); // Verifica autenticación
 
         $user = $_REQUEST["user"];
         if (!$user) {
