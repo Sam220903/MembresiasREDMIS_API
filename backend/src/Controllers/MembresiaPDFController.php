@@ -1,5 +1,5 @@
 <?php
-    
+  
     class MembresiaPDFController{
         private $membresiasService;
         public function __construct($membresiasService){
@@ -38,7 +38,7 @@
     
             // Define the filename
             $fileName = $pdfData['nombre'] . "CredencialPDF.pdf";
-            $filePath = __DIR__ . '/../../../PDFs/' . $fileName;
+            $filePath = __DIR__ . '../pdfs/' . $fileName;
     
             // Create PDF
             $pdf = new FPDF();
