@@ -1,6 +1,7 @@
 <?php 
 global $connection;
 
+
 spl_autoload_register(function ($class) {
     $directories = [
         __DIR__ . "/../src/Config/",
