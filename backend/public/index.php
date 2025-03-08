@@ -1,6 +1,7 @@
 <?php 
 global $connection;
 
+
 spl_autoload_register(function ($class) {
     $directories = [
         __DIR__ . "/../src/Config/",
@@ -93,7 +94,17 @@ switch ($route){
             echo json_encode(["error" => $e->getMessage()]);
         }
         break;
-
+    case "solicitudesMembresias":
+            $solicitudesMembresiasService = new solicitudesMembresiasService($dbConnection); // Pass the connection object
+            $solicitudesMembresiasService = new solicitudesMembresiasController($solicitudesMembresiasService);
+            try {
+                $response = $solicitudesMembresiasService->getSolicitudesMembresias($_SERVER);
+                echo json_encode($response);
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode(["error" => $e->getMessage()]);
+            }
+        break;
     case "statistics":
         $service = new StatisticsService($database);
         $controller = new StatisticsController($service);  // Aumentar payload para autorización 
