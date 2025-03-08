@@ -78,6 +78,29 @@ switch ($route){
         $controller->processRequest($_SERVER["REQUEST_METHOD"]);
         break;
 
+    //Ruta para solicitar membresias
+    case "solicitarMembresia":
+        $service = new MembershipApplicationService($dbConnection); // 🔹 Ahora recibe la conexión
+        $controller = new MembershipApplicationController($service);
+        $controller->registerMembership();
+        break;
+
+    // Ruta de aceptar una membresía
+    case "aceptarMembresia":
+        $membershipService = new MembershipService($dbConnection); // 🔹 Ahora recibe la conexión
+        $mailerService = new MailerService();
+        $controller = new MembershipRequestController($membershipService, $mailerService);
+        $controller->acceptMembershipRequest($id);
+        break;
+
+    // Ruta de rechazar una membresía
+    case "rechazarMembresia":
+        $membershipService = new MembershipService($dbConnection); // 🔹 Ahora recibe la conexión
+        $mailerService = new MailerService();
+        $controller = new MembershipRequestController($membershipService, $mailerService);
+        $controller->rejectMembershipRequest($id);
+        break;
+
     case "membresias":
         $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
         $membresiasController = new MembresiasController($membresiasService);
@@ -94,6 +117,7 @@ switch ($route){
             echo json_encode(["error" => $e->getMessage()]);
         }
         break;
+
     case "solicitudesMembresias":
             $solicitudesMembresiasService = new solicitudesMembresiasService($dbConnection); // Pass the connection object
             $solicitudesMembresiasService = new solicitudesMembresiasController($solicitudesMembresiasService);
@@ -105,6 +129,7 @@ switch ($route){
                 echo json_encode(["error" => $e->getMessage()]);
             }
         break;
+
     case "statistics":
         $service = new StatisticsService($database);
         $controller = new StatisticsController($service);  // Aumentar payload para autorización 
