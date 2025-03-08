@@ -10,7 +10,6 @@ class MembershipRequestController {
     }
 
     public function acceptMembershipRequest($id) {
-
         $user = $_REQUEST["user"];
         if ($user["role"] !== "admin") {
             http_response_code(403);
@@ -21,9 +20,12 @@ class MembershipRequestController {
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
 
+            // Normalizar la ruta del PDF
+            $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf'); // Ajustar con la ruta real
+
             // Enviar correo de confirmación al usuario
             $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], [
-                'path' => '/path/to/membership.pdf', // Ajustar con la ruta real
+                'path' => $pdfPath,
                 'fileName' => 'Membresia.pdf'
             ]);
 
@@ -36,7 +38,6 @@ class MembershipRequestController {
     }
 
     public function rejectMembershipRequest($id) {
-
         $user = $_REQUEST["user"];
         if ($user["role"] !== "admin") {
             http_response_code(403);
