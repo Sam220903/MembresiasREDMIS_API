@@ -101,6 +101,10 @@ class MiembrosService{
 
     // Obtener un miembro por ID con la misma estructura detallada
     public function getMemberById(string $id, bool $includeSensitive = false): ?array {
+        if (empty($id) || !is_numeric($id)) {
+            throw new Exception('ID inválido. Debe ser un número.');
+        }
+        
         $sql = "
             SELECT 
                 MR_Miembros.id,
@@ -129,14 +133,19 @@ class MiembrosService{
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         $member = $stmt->fetch(PDO::FETCH_ASSOC);
-
+    
+        if (!$member) {
+            throw new Exception('No se encontró un miembro con el ID proporcionado.');
+        }
+    
         if (!$includeSensitive) {
             unset($member['nombre']);
             unset($member['apellidos']);
         }
-
-        return $member ?: null;
+    
+        return $member;
     }
+    
 }
 ?>
 
