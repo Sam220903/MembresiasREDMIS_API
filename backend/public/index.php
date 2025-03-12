@@ -119,15 +119,15 @@ switch ($route){
         break;
 
     case "solicitudesMembresias":
-            $solicitudesMembresiasService = new solicitudesMembresiasService($dbConnection); // Pass the connection object
-            $solicitudesMembresiasService = new solicitudesMembresiasController($solicitudesMembresiasService);
-            try {
-                $response = $solicitudesMembresiasService->getSolicitudesMembresias($_SERVER);
-                echo json_encode($response);
-            } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode(["error" => $e->getMessage()]);
-            }
+        $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection);
+        $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
+        try {
+            $response = $solicitudesMembresiasController->getSolicitudesMembresias($_SERVER);
+            echo json_encode($response, flags: JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
         break;
 
     case "statistics":

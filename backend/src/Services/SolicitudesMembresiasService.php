@@ -13,19 +13,25 @@ class SolicitudesMembresiasService {
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $solicitudesMembresias = [];
+        // Estructura similar a tu ejemplo con un objeto contenedor
+        $responseData = [
+            "solicitudes" => []
+        ];
+
         foreach ($results as $row) {
-            $solicitudesMembresia = new SolicitudesMembresias(
-                $row['id'],
-                $row['estado'],
-                $row['fecha_solicitud'],
-                $row['fecha_respuesta'],
-                $row['comentarios'],
-                $row['revisado_por']
-            );
-            $solicitudesMembresias[] = $solicitudesMembresia->toJson();
+            $solicitud = [
+                'id' => $row['id'],
+                'estado' => $row['estado'],
+                'fecha_solicitud' => $row['fecha_solicitud'],
+                'fecha_respuesta' => $row['fecha_respuesta'],
+                'comentarios' => $row['comentarios'],
+                'revisado_por' => $row['revisado_por']
+            ];
+            
+            // Añadir al array interno
+            $responseData["solicitudes"][] = $solicitud;
         }
 
-        return $solicitudesMembresias;
+        return $responseData;
     }
 }
