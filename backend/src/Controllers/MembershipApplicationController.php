@@ -2,6 +2,9 @@
 
 
 class MembershipApplicationController {
+
+    use AuthorizationTrait;
+    
     private $membershipApplicationService;
 
     public function __construct(MembershipApplicationService $membershipApplicationService) {

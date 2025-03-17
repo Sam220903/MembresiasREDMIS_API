@@ -1,7 +1,9 @@
 <?php
 
 class LoginController
-{
+{   
+    use AuthorizationTrait;
+
     private $user_service;
     private $jwt;
     private $token_service;

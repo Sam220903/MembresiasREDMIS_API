@@ -1,6 +1,9 @@
 <?php
 
 class MembershipRequestController {
+
+    use AuthorizationTrait;
+    
     private $membershipService;
     private $mailerService;
 

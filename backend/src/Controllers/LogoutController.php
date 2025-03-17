@@ -2,6 +2,8 @@
 
 class LogoutController{
 
+    use AuthorizationTrait;
+
     private $token_service;
     public function __construct(TokenService $token_service){
         $this->token_service = $token_service;
