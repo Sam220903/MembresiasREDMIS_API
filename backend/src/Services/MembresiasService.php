@@ -19,8 +19,6 @@ class MembresiasService {
             $membresia = new Membresias(
                 $row['id'],
                 $row['nombre'],
-                $row['fecha_inicio'],
-                $row['fecha_fin'],
                 $row['tipo']
             );
             $membresias[] = $membresia;
@@ -46,6 +44,21 @@ class MembresiasService {
         $stmt = $this->connection->prepare($query);
         $stmt->bindValue(':tipo', $data["tipo"]);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    public function postMembresias($data) {
+        $query = "INSERT INTO MR_Membresias (nombre, tipo) VALUES (:nombre, :tipo)";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(':nombre', $data['nombre']);
+        $stmt->bindValue(':tipo', $data['tipo']);
+        $stmt->execute();
+        return $this->connection->lastInsertId();
+    }
+
+    public function deleteMembresias($id) {
+        $query = 'DELETE FROM MR_Membresias WHERE id = :id';
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
     }
 }
