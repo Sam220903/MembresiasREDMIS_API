@@ -1,5 +1,8 @@
 <?php
 class StatisticsController{
+
+    use AuthorizationTrait;
+
     public function __construct(private readonly StatisticsService $service){
         // Agregar el payload cuando esa parte este terminada
     }

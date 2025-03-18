@@ -2,15 +2,21 @@
 
 
 class MembershipApplicationController {
+
+    use AuthorizationTrait;
+    
     private $membershipApplicationService;
 
     public function __construct(MembershipApplicationService $membershipApplicationService) {
         $this->membershipApplicationService = $membershipApplicationService;
-    }
+    } 
 
     public function registerMembership() {
 
-        $user = $_REQUEST["user"];
+        session_start();
+
+        $user = $_SESSION["user"];
+
         if (!$user) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Usuario no autenticado."]);
