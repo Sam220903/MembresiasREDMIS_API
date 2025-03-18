@@ -42,11 +42,21 @@ class MiembrosService{
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
     }
-
     public function updateMember($id, $new){
-        $current = $this->getMemberById($id, true);
+        // Get the current member data with the actual IDs, not just names
+        $query = "SELECT id, nombre, apellidos, genero, MR_Universidades_id as universidad, 
+                 MR_Estados_id as estado, MR_Paises_id as pais 
+                 FROM MR_Miembros WHERE id = :id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $current = $stmt->fetch(PDO::FETCH_ASSOC);
+        
         if (!$current) throw new Exception('Miembro no encontrado');
-        $query = "UPDATE MR_Miembros SET nombre=:newNombre, apellidos=:newApellido, genero=:newGenero, MR_Universidades_id=:newUniversidad, MR_Estados_id=:newEstado, MR_Paises_id=:newPais WHERE id=:id";
+        
+        $query = "UPDATE MR_Miembros SET nombre=:newNombre, apellidos=:newApellido, genero=:newGenero, 
+                 MR_Universidades_id=:newUniversidad, MR_Estados_id=:newEstado, MR_Paises_id=:newPais 
+                 WHERE id=:id";
         $stmt = $this->connection->prepare($query);
         $stmt->bindValue(":newNombre", $new["nombre"] ?? $current["nombre"]);
         $stmt->bindValue(":newApellido", $new["apellidos"] ?? $current["apellidos"]);
@@ -55,8 +65,14 @@ class MiembrosService{
         $stmt->bindValue(":newEstado", $new["estado"] ?? $current["estado"]);
         $stmt->bindValue(":newPais", $new["pais"] ?? $current["pais"]);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        if(isset($new["email"]) && isset($new["password"])){
+        
+        // Update email and/or password if either is provided
+        if(isset($new["email"]) && isset($new["password"])) {
             $this->updateLogin($id, $new["email"], $new["password"]);
+        } else if(isset($new["email"])) {
+            $this->updateEmail($id, $new["email"]);
+        } else if(isset($new["password"])) {
+            $this->updatePassword($id, $new["password"]);
         }
 
         $stmt->execute();
@@ -71,6 +87,23 @@ class MiembrosService{
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
     }
+    
+    public function updateEmail($id, $email){
+        $query = "UPDATE MR_Login SET email=:email WHERE MR_Miembros_id=:id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":email", $email);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    public function updatePassword($id, $password){
+        $query = "UPDATE MR_Login SET password_hash=:password WHERE MR_Miembros_id=:id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":password", $password);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
 
     public function getAllMembers(): array {
         $sql = "

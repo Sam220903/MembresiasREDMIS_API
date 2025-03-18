@@ -23,6 +23,12 @@ spl_autoload_register(function ($class) {
 include_once '../src/Config/header.php';
 include_once '../src/config/config.php';
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    // Just exit with 200 OK status
+    http_response_code(200);
+    exit();
+}
+
 // Firma JWT, esta clave debe de ser una variable de entorno en producción
 $jwt = new Jwt('1234567');
 
