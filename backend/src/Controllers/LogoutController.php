@@ -2,6 +2,8 @@
 
 class LogoutController{
 
+    use AuthorizationTrait;
+
     private $token_service;
     public function __construct(TokenService $token_service){
         $this->token_service = $token_service;
@@ -18,6 +20,8 @@ class LogoutController{
     }
 
     public function logout(){
+        session_start();
+
         $headers = getallheaders();
         $auth_header = $headers['Authorization'] ?? '';
 
@@ -37,6 +41,10 @@ class LogoutController{
             http_response_code(401);
             echo json_encode(['error' => 'Token inválido']);
         }
+
+        unset($_SESSION['user']);
+        session_unset();
+        session_destroy();
 
     }
 }
