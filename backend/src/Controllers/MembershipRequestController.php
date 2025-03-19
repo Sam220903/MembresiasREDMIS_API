@@ -1,6 +1,9 @@
 <?php
 
 class MembershipRequestController {
+
+    use AuthorizationTrait;
+    
     private $membershipService;
     private $mailerService;
 
@@ -9,8 +12,10 @@ class MembershipRequestController {
         $this->mailerService = $mailerService;
     }
 
-    public function acceptMembershipRequest($id) {
-        $user = $_REQUEST["user"];
+    public function acceptMembershipRequest($id) { 
+        session_start();
+
+        $user = $_SESSION["user"];
         if ($user["role"] !== "admin") {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
@@ -38,7 +43,9 @@ class MembershipRequestController {
     }
 
     public function rejectMembershipRequest($id) {
-        $user = $_REQUEST["user"];
+        session_start();
+
+        $user = $_SESSION["user"];
         if ($user["role"] !== "admin") {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);

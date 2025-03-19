@@ -21,4 +21,4 @@ class MembershipService {
         // Actualizar estado de la solicitud con la razón si es rechazada
         return $this->membershipRequestModel->updateRequestStatus($id, $status, $reason);
     }
-}
+} 
