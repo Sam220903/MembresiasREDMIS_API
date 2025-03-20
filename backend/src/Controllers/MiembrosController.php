@@ -1,9 +1,6 @@
 <?php
     
     class MiembrosController{
-
-        use AuthorizationTrait;
-        
         private $miembrosService;
         public function __construct($miembrosService){
             $this->miembrosService = $miembrosService;

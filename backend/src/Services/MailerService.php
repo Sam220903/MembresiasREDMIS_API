@@ -3,9 +3,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 
-require __DIR__ . "/../PHPMailer/PHPMailer.php";
-require __DIR__ . "/../PHPMailer/Exception.php";
-require __DIR__ . "/../PHPMailer/SMTP.php";
+require "../PHPMailer/PHPMailer.php";
+require "../PHPMailer/Exception.php";
+require "../PHPMailer/SMTP.php";
 
 class MailerService {
     private $mail;
@@ -111,7 +111,7 @@ class MailerService {
             error_log("Error al enviar confirmación de membresía: " . $this->mail->ErrorInfo);
             return false;
         }
-    } 
+    }
 
     // 📩 Envía un correo al usuario notificándole que su membresía fue rechazada
     public function sendMembershipRejection($userEmail, $userName, $reason) {

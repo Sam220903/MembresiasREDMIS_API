@@ -1,8 +1,6 @@
 <?php
 
 class SolicitudesMembresiasController {
-
-    use AuthorizationTrait;
     private $solicitudesMembresiasService;
 
     public function __construct($solicitudesMembresiasService) {

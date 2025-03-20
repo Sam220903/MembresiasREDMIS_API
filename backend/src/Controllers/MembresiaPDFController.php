@@ -1,9 +1,6 @@
 <?php
   
 class MembresiaPDFController {
-
-    use AuthorizationTrait;
-    
     private $membresiasService;
     
     public function __construct($membresiasService) {

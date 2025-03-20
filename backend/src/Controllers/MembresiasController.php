@@ -1,9 +1,6 @@
 <?php
 
 class MembresiasController{
-
-    use AuthorizationTrait;
-    
     private $membresiasService;
 
     public function __construct($membresiasService )
