@@ -14,15 +14,17 @@ class MembershipApplication {
     }
 
     public function create($userId, $data) {
-        $stmt = $this->pdo->prepare("INSERT INTO MR_SolicitudesMembresia (MR_Miembros_id, MR_Membresias_id, estado, comentarios) VALUES (:userId, :membershipId, 'PENDIENTE', :comentarios)");
+        $stmt = $this->pdo->prepare("INSERT INTO MR_SolicitudesMembresia (MR_Miembros_id, MR_Membresias_id, estado, comentarios) 
+                                     VALUES (:userId, :membershipId, 'PENDIENTE', :comentarios)");
         $stmt->execute([
             ':userId' => $userId,
             ':membershipId' => $data['MR_Membresias_id'],
             ':comentarios' => $data['comentarios'] ?? ''
         ]);
 
-        // Registrar CV en MR_ArchivosMiembros
-        $stmt = $this->pdo->prepare("INSERT INTO MR_ArchivosMiembros (MR_Miembros_id, cv) VALUES (:userId, :cv)");
+        // Register CV in MR_ArchivosMiembros, setting `credencial` as NULL
+        $stmt = $this->pdo->prepare("INSERT INTO MR_ArchivosMiembros (MR_Miembros_id, cv, credencial) 
+                                     VALUES (:userId, :cv, NULL)");
         $stmt->execute([
             ':userId' => $userId,
             ':cv' => $data['cv']

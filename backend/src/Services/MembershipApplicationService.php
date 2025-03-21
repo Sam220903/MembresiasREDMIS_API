@@ -8,13 +8,13 @@ class MembershipApplicationService {
     }
 
     public function createApplication($userId, $data) {
-        // Verificar si el usuario ya tiene una solicitud pendiente
+        // Verify if user already has a pending membership request
         $existingRequest = $this->membershipApplicationModel->findPendingRequestByUserId($userId);
         if ($existingRequest) {
             throw new \Exception("Ya existe una solicitud de membresía pendiente para este usuario.");
         }
 
-        // Registrar la solicitud de membresía en MR_SolicitudesMembresia
+        // Register membership request in MR_SolicitudesMembresia
         return $this->membershipApplicationModel->create($userId, $data);
     }
 }
