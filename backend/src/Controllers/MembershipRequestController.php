@@ -9,9 +9,32 @@ class MembershipRequestController {
         $this->mailerService = $mailerService;
     }
 
+    private function getUserFromToken() {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? '';
+
+        if (strpos($authHeader, 'Bearer ') !== 0) {
+            http_response_code(401);
+            echo json_encode(["status" => "error", "message" => "Token no proporcionado"]);
+            exit;
+        }
+
+        $token = substr($authHeader, 7);
+        $payload = json_decode(base64_decode(explode('.', $token)[1] ?? ''), true);
+
+        if (!$payload || !isset($payload['id']) || !isset($payload['role'])) {
+            http_response_code(401);
+            echo json_encode(["status" => "error", "message" => "Token inválido"]);
+            exit;
+        }
+
+        return $payload;
+    }
+
     public function acceptMembershipRequest($id) {
-        $user = $_REQUEST["user"];
-        if ($user["role"] !== "admin") {
+        $userPayload = $this->getUserFromToken();
+
+        if ($userPayload["role"] !== "admin") {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
@@ -20,10 +43,8 @@ class MembershipRequestController {
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
 
-            // Normalizar la ruta del PDF
-            $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf'); // Ajustar con la ruta real
+            $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf');
 
-            // Enviar correo de confirmación al usuario
             $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], [
                 'path' => $pdfPath,
                 'fileName' => 'Membresia.pdf'
@@ -38,8 +59,9 @@ class MembershipRequestController {
     }
 
     public function rejectMembershipRequest($id) {
-        $user = $_REQUEST["user"];
-        if ($user["role"] !== "admin") {
+        $userPayload = $this->getUserFromToken();
+
+        if ($userPayload["role"] !== "admin") {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
@@ -55,7 +77,6 @@ class MembershipRequestController {
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'RECHAZADA', $data['reason']);
 
-            // Enviar correo de rechazo al usuario
             $this->mailerService->sendMembershipRejection($result['email'], $result['nombre'], $data['reason']);
 
             http_response_code(200);

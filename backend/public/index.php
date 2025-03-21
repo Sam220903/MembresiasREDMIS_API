@@ -86,14 +86,14 @@ switch ($route){
 
     //Ruta para solicitar membresias
     case "solicitarMembresia":
-        $service = new MembershipApplicationService($dbConnection); // 🔹 Ahora recibe la conexión
+        $service = new MembershipApplicationService($dbConnection); //  Ahora recibe la conexión
         $controller = new MembershipApplicationController($service);
         $controller->registerMembership();
         break;
 
     // Ruta de aceptar una membresía
     case "aceptarMembresia":
-        $membershipService = new MembershipService($dbConnection); // 🔹 Ahora recibe la conexión
+        $membershipService = new MembershipService($dbConnection); // Ahora recibe la conexión
         $mailerService = new MailerService();
         $controller = new MembershipRequestController($membershipService, $mailerService);
         $controller->acceptMembershipRequest($id);
@@ -101,7 +101,7 @@ switch ($route){
 
     // Ruta de rechazar una membresía
     case "rechazarMembresia":
-        $membershipService = new MembershipService($dbConnection); // 🔹 Ahora recibe la conexión
+        $membershipService = new MembershipService($dbConnection); //  Ahora recibe la conexión
         $mailerService = new MailerService();
         $controller = new MembershipRequestController($membershipService, $mailerService);
         $controller->rejectMembershipRequest($id);

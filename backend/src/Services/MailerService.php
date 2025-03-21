@@ -136,7 +136,7 @@ class MailerService {
      * Normaliza la ruta del PDF para asegurar que es accesible
      * 
      */
-    private function normalizePdfPath($path) {
+    public function normalizePdfPath($path) {
         // Si es una ruta absoluta, devuélvela tal cual
         if (file_exists($path)) {
             return $path;
