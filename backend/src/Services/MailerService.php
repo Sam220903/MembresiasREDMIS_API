@@ -3,9 +3,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 
-require "../PHPMailer/PHPMailer.php";
-require "../PHPMailer/Exception.php";
-require "../PHPMailer/SMTP.php";
+require "../src/PHPMailer/PHPMailer.php";
+require "../src/PHPMailer/Exception.php";
+require "../src/PHPMailer/SMTP.php";
 
 class MailerService {
     private $mail;

@@ -34,7 +34,7 @@ class MembershipRequestController {
     public function acceptMembershipRequest($id) {
         $userPayload = $this->getUserFromToken();
 
-        if ($userPayload["role"] !== "admin") {
+        if ($userPayload["role"] !== 1) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
@@ -63,7 +63,7 @@ class MembershipRequestController {
     public function rejectMembershipRequest($id) {
         $userPayload = $this->getUserFromToken();
 
-        if ($userPayload["role"] !== "admin") {
+        if ($userPayload["role"] !== 1) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
