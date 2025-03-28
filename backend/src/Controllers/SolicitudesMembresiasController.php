@@ -9,6 +9,12 @@ class SolicitudesMembresiasController {
 
     public function getSolicitudesMembresias($request) {
         if ($request['REQUEST_METHOD'] !== 'GET') throw new Exception('El endpoint no soporta este método');
-        return $this->solicitudesMembresiasService->getSolicitudesMembresias();
+        
+        $data = $this->solicitudesMembresiasService->getSolicitudesMembresias();
+        
+        // Configurar encabezados adecuados
+        header('Content-Type: application/json; charset=UTF-8');
+        
+        return $data;
     }
 }
