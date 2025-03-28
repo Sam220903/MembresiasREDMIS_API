@@ -160,6 +160,21 @@ switch ($route){
         }
         break;
 
+    case "universidades":
+        $universidadesService = new UniversidadesService($dbConnection);
+        $universidadesController = new UniversidadesController($universidadesService);
+        $universidadesController->listOfUniversidades();
+        break;
+    case "paises":
+        $paisesService = new PaisesService($dbConnection);
+        $paisesController = new PaisesController($paisesService);
+        $paisesController->listOfPaises();
+        break;
+    case "estados":
+        $estadosService = new EstadosService($dbConnection);
+        $estadosController = new EstadosController($estadosService);
+        $estadosController->listOfEstados();
+        break;
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
