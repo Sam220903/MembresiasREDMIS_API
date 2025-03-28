@@ -37,11 +37,11 @@ class TokenService{
     public function findValidToken($token)
     {
         $sql = "SELECT t.* FROM MR_Tokens t inner join MR_Miembros u on t.MR_Miembros_id = u.id
-                WHERE t.token = :token AND (t.expired = false OR t.revoked = false)";
+                WHERE t.token = :token AND t.expired = false AND t.revoked = false";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(":token", $token, PDO::PARAM_INT);
+        $stmt->bindValue(":token", $token);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function findByToken($token)
@@ -53,13 +53,12 @@ class TokenService{
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function expireAndRevokeTokens($token)
+    public function expireAndRevokeToken($token)
     {
         $sql = "UPDATE MR_Tokens SET expired = true, revoked = true WHERE token = :token";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(":token", $token);
         $stmt->execute();
-
     }
 
     public function revokeAllTokens($userID)

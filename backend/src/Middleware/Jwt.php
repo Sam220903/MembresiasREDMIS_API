@@ -75,10 +75,16 @@ class Jwt
             throw new Exception("Invalid payload");
         }
 
-        $storedToken = $tokenService->findValidToken($token);
-        if (isset($payload['exp']) && $payload['exp'] < time() || !$storedToken) {
+        // Check if token is expired based on JWT payload
+        if (isset($payload['exp']) && $payload['exp'] < time()) {
             $tokenService->expireAndRevokeToken($token);
             throw new Exception("Token has expired");
+        }
+
+        // Check if token exists and is valid in database
+        $storedToken = $tokenService->findValidToken($token);
+        if (!$storedToken) {
+            throw new Exception("Token has been revoked or expired");
         }
 
         return $payload;

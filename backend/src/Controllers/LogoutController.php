@@ -30,7 +30,7 @@ class LogoutController{
         $token = $matches[1];
         $stored_token = $this->token_service->findByToken($token);
         if($stored_token !== null){
-            $this->token_service->expireAndRevokeTokens($token);
+            $this->token_service->expireAndRevokeToken($token);
             http_response_code(200);
             echo json_encode(['message' => 'Cierre de sesión exitoso']);
         } else {
