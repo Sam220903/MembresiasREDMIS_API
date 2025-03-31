@@ -174,6 +174,38 @@ switch ($route){
         $estadosController = new EstadosController($estadosService);
         $estadosController->listOfEstados();
         break;
+        
+    case "membresiaUsuario":
+            $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
+            $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+            
+            $data = $_POST;
+            if (empty($data)) {
+                $data = (array) json_decode(file_get_contents("php://input"), true);
+            }
+            
+            // Si hay un ID en la URL, es para obtener una membresía específica
+            if ($id) {
+                $data['usuarioId'] = $id; // Asignamos el ID de la URL como usuarioId
+                try {
+                    $response = $membresiaUsuarioController->obtenerMembresiaUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            } 
+            // Si no hay ID, es para listar todas las membresías de un usuario (necesita usuarioId en el body)
+            else {
+                try {
+                    $response = $membresiaUsuarioController->listarMembresiasUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            }
+            break;
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
