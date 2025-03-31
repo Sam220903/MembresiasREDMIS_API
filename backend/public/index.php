@@ -128,8 +128,7 @@ switch ($route){
         $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection); // Pass the connection object
         $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
         try {
-            $response = $solicitudesMembresiasController->getSolicitudesMembresias($_SERVER);
-            echo json_encode($response);
+            $solicitudesMembresiasController->processRequest($_SERVER['REQUEST_METHOD'], $id);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(["error" => $e->getMessage()]);

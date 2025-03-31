@@ -107,26 +107,32 @@ class MiembrosService{
 
     public function getAllMembers(): array {
         $sql = "
-            SELECT 
-                MR_Miembros.id,
-                CONCAT(MR_Miembros.nombre, ' ', MR_Miembros.apellidos) AS nombre_completo,
-                MR_Miembros.genero,
-                MR_Miembros.fecha_registro,
-                MR_Miembros.ultima_actualizacion,
-                MR_Universidades.nombre AS universidad,
-                MR_Estados.nombre AS estado,
-                MR_Paises.nombre AS pais,
-                MR_EstatusMiembros.nombre AS estatus,
-                MR_TiposUsuario.nombre AS tipo_usuario,
-                MR_Login.email,
-                MR_Login.ultimo_acceso
-            FROM MR_Miembros
-            LEFT JOIN MR_Universidades ON MR_Miembros.MR_Universidades_id = MR_Universidades.id
-            LEFT JOIN MR_Estados ON MR_Miembros.MR_Estados_id = MR_Estados.id
-            LEFT JOIN MR_Paises ON MR_Miembros.MR_Paises_id = MR_Paises.id
-            LEFT JOIN MR_EstatusMiembros ON MR_Miembros.MR_EstatusMiembros_id = MR_EstatusMiembros.id
-            LEFT JOIN MR_TiposUsuario ON MR_Miembros.MR_TiposUsuario_id = MR_TiposUsuario.id
-            LEFT JOIN MR_Login ON MR_Miembros.id = MR_Login.MR_Miembros_id;
+            WITH UltimaSolicitud AS (
+                SELECT
+                    u.id,
+                    CONCAT(u.nombre, ' ', u.apellidos) AS nombre_completo,
+                    m.nombre AS membresia,
+                    s.fecha_solicitud,
+                    s.estado,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY u.id
+                        ORDER BY
+                            CASE
+                                WHEN s.estado = 'APROBADA' THEN 1
+                                WHEN s.estado = 'PENDIENTE' THEN 2
+                                WHEN s.estado = 'RECHAZADA' THEN 3
+                                ELSE 4
+                            END,
+                            s.fecha_solicitud DESC
+                    ) AS rn
+                FROM MR_Miembros u
+                JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
+                JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
+            )
+            SELECT id, nombre_completo, membresia, fecha_solicitud, estado
+            FROM UltimaSolicitud
+            WHERE rn = 1
+            ORDER BY id;
         ";
         $stmt = $this->connection->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
