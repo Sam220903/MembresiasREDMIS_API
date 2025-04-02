@@ -107,9 +107,9 @@ class MiembrosService{
 
     public function getAllMembers(): array {
         $sql = "
-            WITH UltimaSolicitud AS (
+            WITH SolicitudesOrdenadas AS (
                 SELECT
-                    u.id,
+                    u.id AS usuario_id,
                     CONCAT(u.nombre, ' ', u.apellidos) AS nombre_completo,
                     m.nombre AS membresia,
                     s.fecha_solicitud,
@@ -118,9 +118,9 @@ class MiembrosService{
                         PARTITION BY u.id
                         ORDER BY
                             CASE
-                                WHEN s.estado = 'APROBADA' THEN 1
-                                WHEN s.estado = 'PENDIENTE' THEN 2
-                                WHEN s.estado = 'RECHAZADA' THEN 3
+                                WHEN s.estado = 'Aprobado' THEN 1
+                                WHEN s.estado = 'Pendiente' THEN 2
+                                WHEN s.estado = 'Rechazado' THEN 3
                                 ELSE 4
                             END,
                             s.fecha_solicitud DESC
@@ -129,11 +129,10 @@ class MiembrosService{
                 JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
                 JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
             )
-            SELECT id, nombre_completo, membresia, fecha_solicitud, estado
-            FROM UltimaSolicitud
+            SELECT usuario_id, nombre_completo, membresia, fecha_solicitud, estado
+            FROM SolicitudesOrdenadas
             WHERE rn = 1
-            ORDER BY id;
-        ";
+            ORDER BY usuario_id;";
         $stmt = $this->connection->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

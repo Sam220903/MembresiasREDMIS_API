@@ -48,9 +48,20 @@ class SolicitudesMembresiasService {
     }
 
     public function getSolicitudporID($id) {
-        $query = "SELECT s.id, CONCAT(u.nombre, ' ', u.apellidos) AS 'nombre', l.email, m.nombre AS 'membresia', s.estado, s.fecha_solicitud, s.comentarios
-                    FROM MR_SolicitudesMembresia s JOIN MR_Membresias m ON (MR_Membresias_id = m.id)
-                    JOIN MR_Miembros u ON (s.MR_Miembros_id = u.id) JOIN MR_Login l ON (u.id = l.MR_Miembros_id)
+        $query = "SELECT s.id, CONCAT(u.nombre, ' ', u.apellidos) AS nombre, l.email, 
+                        m.nombre AS membresia, s.estado, s.fecha_solicitud, 
+                        s.comentarios, a.cv
+                    FROM MR_SolicitudesMembresia s
+                    LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
+                    LEFT JOIN MR_Miembros u ON s.MR_Miembros_id = u.id
+                    LEFT JOIN MR_Login l ON u.id = l.MR_Miembros_id
+                    LEFT JOIN MR_ArchivosMiembros a 
+                        ON s.MR_Miembros_id = a.MR_Miembros_id
+                        AND (a.fecha_subida = (
+                            SELECT MAX(a1.fecha_subida) 
+                            FROM MR_ArchivosMiembros a1 
+                            WHERE a1.MR_Miembros_id = s.MR_Miembros_id)
+                        OR ABS(TIMESTAMPDIFF(MINUTE, a.fecha_subida, s.fecha_solicitud)) <= 10)
                     WHERE s.id = :id;";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
