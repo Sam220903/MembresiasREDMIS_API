@@ -39,7 +39,7 @@ $dbConnection = $database->getConnection(); // Ensure you get the connection obj
 $token_gateway = new TokenService($database);
 
 // Instancia de objetos para manejo de autorizaciones y roles
-$auth_middleware = new AuthMiddleware($jwt, ['login']);
+$auth_middleware = new AuthMiddleware($jwt, ['login', 'miembros']);
 
 // Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -149,7 +149,6 @@ switch ($route){
         if (empty($data)){
             $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
-
         try {
             $response = $miembrosController->handleRequest($_SERVER, $id, $data);
             echo json_encode($response);
@@ -206,6 +205,7 @@ switch ($route){
                 }
             }
             break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
