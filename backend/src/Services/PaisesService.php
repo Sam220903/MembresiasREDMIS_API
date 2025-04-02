@@ -8,7 +8,7 @@ class PaisesService{
     }
 
     public function getAllPaises() {
-        $sql = "SELECT nombre FROM MR_Paises";
+        $sql = "SELECT id, nombre FROM MR_Paises";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

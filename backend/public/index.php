@@ -39,7 +39,7 @@ $dbConnection = $database->getConnection(); // Ensure you get the connection obj
 $token_gateway = new TokenService($database);
 
 // Instancia de objetos para manejo de autorizaciones y roles
-$auth_middleware = new AuthMiddleware($jwt, ['login', 'miembros']);
+$auth_middleware = new AuthMiddleware($jwt, ['login', 'miembros', 'universidades', 'paises', 'estados']);
 
 // Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
