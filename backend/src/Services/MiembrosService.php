@@ -8,7 +8,7 @@ class MiembrosService{
     }
 
     public function postMiembro($data){
-        $query="INSERT INTO MR_Miembros (nombre,apellidos,genero,MR_Universidades_id,MR_Estados_id,MR_Paises_id) VALUES (:nombre,:apellidos,:genero,:MR_Universidades_id,:MR_Estados_id,:MR_Paises_id) ";
+        $query="INSERT INTO MR_Miembros (nombre,apellidos,genero,MR_Universidades_id,MR_Estados_id,MR_Paises_id, MR_TiposUsuario_id) VALUES (:nombre,:apellidos,:genero,:MR_Universidades_id,:MR_Estados_id,:MR_Paises_id, 2) ";
         $stmt=$this->connection->prepare($query);
         $stmt->bindValue(":nombre",$data["nombre"]);
         $stmt->bindValue(":apellidos",$data["apellidos"]);
@@ -16,9 +16,7 @@ class MiembrosService{
         $stmt->bindValue(":MR_Universidades_id",$data["universidad"] ?? null);
         $stmt->bindValue(":MR_Estados_id",$data["estado"] ?? null);
         $stmt->bindValue(":MR_Paises_id",$data["paises"] ?? null);
-        //agregar validaciones 
 
-        
         $stmt->execute();
         $miembroId=$this->connection->lastInsertId();
         $this->postLogin($miembroId,$data);
@@ -127,8 +125,8 @@ class MiembrosService{
                             s.fecha_solicitud DESC
                     ) AS rn
                 FROM MR_Miembros u
-                JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
-                JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
+                LEFT JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
+                LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
             )
             SELECT usuario_id, nombre_completo, rol, membresia, fecha_solicitud, estado
             FROM SolicitudesOrdenadas
