@@ -206,6 +206,22 @@ switch ($route){
             }
             break;
 
+    case "cambiarRol":
+        $miembrosService = new MiembrosService($dbConnection);
+        $roleController = new RoleController($miembrosService);
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $response = $roleController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);

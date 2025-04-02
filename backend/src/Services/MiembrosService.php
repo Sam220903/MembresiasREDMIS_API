@@ -111,6 +111,7 @@ class MiembrosService{
                 SELECT
                     u.id AS usuario_id,
                     CONCAT(u.nombre, ' ', u.apellidos) AS nombre_completo,
+                    u.MR_TiposUsuario_id AS rol,
                     m.nombre AS membresia,
                     s.fecha_solicitud,
                     s.estado,
@@ -129,7 +130,7 @@ class MiembrosService{
                 JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
                 JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
             )
-            SELECT usuario_id, nombre_completo, membresia, fecha_solicitud, estado
+            SELECT usuario_id, nombre_completo, rol, membresia, fecha_solicitud, estado
             FROM SolicitudesOrdenadas
             WHERE rn = 1
             ORDER BY usuario_id;";
@@ -157,7 +158,8 @@ class MiembrosService{
                 MR_EstatusMiembros.nombre AS estatus,
                 MR_TiposUsuario.nombre AS tipo_usuario,
                 MR_Login.email,
-                MR_Login.ultimo_acceso
+                MR_Login.ultimo_acceso,
+                MR_ArchivosMiembros.cv AS cv
             FROM MR_Miembros
             LEFT JOIN MR_Universidades ON MR_Miembros.MR_Universidades_id = MR_Universidades.id
             LEFT JOIN MR_Estados ON MR_Miembros.MR_Estados_id = MR_Estados.id
@@ -165,6 +167,7 @@ class MiembrosService{
             LEFT JOIN MR_EstatusMiembros ON MR_Miembros.MR_EstatusMiembros_id = MR_EstatusMiembros.id
             LEFT JOIN MR_TiposUsuario ON MR_Miembros.MR_TiposUsuario_id = MR_TiposUsuario.id
             LEFT JOIN MR_Login ON MR_Miembros.id = MR_Login.MR_Miembros_id
+            LEFT JOIN MR_ArchivosMiembros ON MR_Miembros.id = MR_ArchivosMiembros.MR_Miembros_id
             WHERE MR_Miembros.id = :id;
         ";
         $stmt = $this->connection->prepare($sql);
@@ -182,6 +185,19 @@ class MiembrosService{
         }
     
         return $member;
+    }
+
+    public function changeRole(string $id, array $data): bool {
+        if (empty($id) || !is_numeric($id)) {
+            throw new Exception('ID inválido. Debe ser un número.');
+        }
+        
+        $query = "UPDATE MR_Miembros SET MR_TiposUsuario_id = :newRole WHERE id = :id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":newRole", $data['role'], PDO::PARAM_INT);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        
+        return $stmt->execute();
     }
     
 }
