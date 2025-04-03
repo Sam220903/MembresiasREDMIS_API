@@ -2,7 +2,7 @@
 
 class StatisticsService{
     //Declaración de variables de la clase
-    private PDO $conn;
+    private $conn;
 
     // Constructor (recibe objeto de base de datos)
     public function __construct(Database $database){

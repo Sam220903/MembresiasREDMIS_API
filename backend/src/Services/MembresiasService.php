@@ -13,18 +13,7 @@ class MembresiasService {
         $stmt = $this->connection->prepare($query);
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $membresias = [];
-        foreach ($results as $row) {
-            $membresia = new Membresias(
-                $row['id'],
-                $row['nombre'],
-                $row['tipo']
-            );
-            $membresias[] = $membresia;
-        }
-
-        return $membresias;
+        return $results;
     }
 
     public function getMembresia($id) {

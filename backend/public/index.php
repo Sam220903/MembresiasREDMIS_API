@@ -21,7 +21,11 @@ spl_autoload_register(function ($class) {
 });
 
 include_once '../src/Config/header.php';
-include_once '../src/config/config.php';
+$configPath = __DIR__ . '/../src/Config/config.php';
+if (!file_exists($configPath)) {
+    die("Error: El archivo de configuración no existe en la ruta esperada.");
+}
+include_once $configPath;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     // Just exit with 200 OK status

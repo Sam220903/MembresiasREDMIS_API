@@ -1,6 +1,9 @@
 <?php
 class StatisticsController{
-    public function __construct(private readonly StatisticsService $service){
+    private $service;
+    
+    public function __construct(StatisticsService $service){
+        $this->service = $service;
         // Agregar el payload cuando esa parte este terminada
     }
     // Procesar las solicitudes según su tipo (recurso o colección)

@@ -1,7 +1,7 @@
 <?php
 $connection = [
     "servername" => "localhost",
-    "username" => "mr_user",
-    "password" => "REDMIS",
-    "dbname" => "mr_db"
+    "username" => "lumacadc_membresias_v2",
+    "password" => "lumacadc_membresias_v2",
+    "dbname" => "lumacadc_membresias"
 ];
