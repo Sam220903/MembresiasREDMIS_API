@@ -2,7 +2,11 @@
 
 class SolicitudesMembresiasController {
 
-    public function __construct(private readonly SolicitudesMembresiasService $solicitudesMembresiasService) {}
+    private SolicitudesMembresiasService $solicitudesMembresiasService;
+
+    public function __construct(SolicitudesMembresiasService $solicitudesMembresiasService) {
+        $this->solicitudesMembresiasService = $solicitudesMembresiasService;
+    }
 
     public function processRequest(string $method, ?string $id) {
         if ($id) {
