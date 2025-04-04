@@ -43,7 +43,7 @@ $dbConnection = $database->getConnection(); // Ensure you get the connection obj
 $token_gateway = new TokenService($database);
 
 // Instancia de objetos para manejo de autorizaciones y roles
-$auth_middleware = new AuthMiddleware($jwt, ['login']);
+$auth_middleware = new AuthMiddleware($jwt, ['login', 'miembros', 'universidades', 'paises', 'estados']);
 
 // Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -132,8 +132,7 @@ switch ($route){
         $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection); // Pass the connection object
         $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
         try {
-            $response = $solicitudesMembresiasController->getSolicitudesMembresias($_SERVER);
-            echo json_encode($response);
+            $solicitudesMembresiasController->processRequest($_SERVER['REQUEST_METHOD'], $id);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(["error" => $e->getMessage()]);
@@ -154,7 +153,6 @@ switch ($route){
         if (empty($data)){
             $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
-
         try {
             $response = $miembrosController->handleRequest($_SERVER, $id, $data);
             echo json_encode($response);
@@ -179,6 +177,55 @@ switch ($route){
         $estadosController = new EstadosController($estadosService);
         $estadosController->listOfEstados();
         break;
+        
+    case "membresiaUsuario":
+            $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
+            $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+            
+            $data = $_POST;
+            if (empty($data)) {
+                $data = (array) json_decode(file_get_contents("php://input"), true);
+            }
+            
+            // Si hay un ID en la URL, es para obtener una membresía específica
+            if ($id) {
+                $data['usuarioId'] = $id; // Asignamos el ID de la URL como usuarioId
+                try {
+                    $response = $membresiaUsuarioController->obtenerMembresiaUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            } 
+            // Si no hay ID, es para listar todas las membresías de un usuario (necesita usuarioId en el body)
+            else {
+                try {
+                    $response = $membresiaUsuarioController->listarMembresiasUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            }
+            break;
+
+    case "cambiarRol":
+        $miembrosService = new MiembrosService($dbConnection);
+        $roleController = new RoleController($miembrosService);
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $response = $roleController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);

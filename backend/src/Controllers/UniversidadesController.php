@@ -9,6 +9,16 @@ class UniversidadesController{
     
     public function listOfUniversidades(){
         $universidades = $this->service->getAllUniversidades();
-        echo json_encode($universidades);
+        
+        // Formatear el resultado para incluir id y nombre
+        $resultado = array_map(function($universidad) {
+            return [
+                'id' => $universidad['id'], // Asegúrate de que el array tenga este campo
+                'nombre' => $universidad['nombre']
+            ];
+        }, $universidades);
+        
+        header('Content-Type: application/json');
+        echo json_encode($resultado);
     }
 }
