@@ -9,6 +9,7 @@ class PaisesController{
     
     public function listOfPaises(){
         $universidades = $this->service->getAllPaises();
+        $universidades = TypeCaster::castRows($universidades);
         echo json_encode($universidades);
     }
 }

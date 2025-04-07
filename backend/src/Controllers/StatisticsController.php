@@ -25,6 +25,7 @@ class StatisticsController{
         switch ($method) {
             case 'GET':
                 $statistics = $this->service->getStatistics();
+                $statistics = TypeCaster::castRows($statistics);
                 echo json_encode($statistics);
                 break;
             

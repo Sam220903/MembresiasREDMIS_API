@@ -25,6 +25,7 @@ class MembresiaPDFController {
     public function getMembresiaPDF($id) {
         require_once(__DIR__ . '/../../../lib/fpdf186/fpdf.php');
         $pdfData = $this->membresiasService->getMembresia($id);
+        $pdfData = TypeCaster::castRow($pdfData);
 
         if (!$pdfData) {
             throw new Exception('No se encontró la membresía.');

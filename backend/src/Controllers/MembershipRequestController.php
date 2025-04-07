@@ -42,6 +42,7 @@ class MembershipRequestController {
 
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
+            $result = TypeCaster::castRow($result);
 
             /* Temporarily disabled email sending for debugging
             $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf');
@@ -78,12 +79,12 @@ class MembershipRequestController {
 
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'RECHAZADA', $data['reason']);
+            $result = TypeCaster::castRow($result);
 
             // Temporarily disabled email sending for debugging
             /*
             $this->mailerService->sendMembershipRejection($result['email'], $result['nombre'], $data['reason']);
             */
-
 
             http_response_code(200);
             echo json_encode(["status" => "success", "message" => "Solicitud rechazada y correo enviado"]);

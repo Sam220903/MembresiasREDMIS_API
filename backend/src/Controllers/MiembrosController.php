@@ -37,11 +37,13 @@
         }
 
         public function getAllMembers(){
-            return $this->miembrosService->getAllMembers();
+            $members = $this->miembrosService->getAllMembers();
+            return TypeCaster::castRows($members);
         }
 
         public function getMemberById($id){
-            return $this->miembrosService->getMemberById($id);
+            $member = $this->miembrosService->getMemberById($id);
+            return TypeCaster::castRow($member);
         }
 
         public function updateMember($id, $data){

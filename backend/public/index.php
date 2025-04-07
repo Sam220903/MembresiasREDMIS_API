@@ -9,6 +9,7 @@ spl_autoload_register(function ($class) {
         __DIR__ . "/../src/Services/",
         __DIR__ . "/../src/Models/",
         __DIR__ . "/../src/Middleware/",
+        __DIR__ . "/../src/Helpers/"
     ];
 
     foreach ($directories as $directory) {

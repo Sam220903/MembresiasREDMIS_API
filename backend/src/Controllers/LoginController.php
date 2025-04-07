@@ -62,11 +62,10 @@ class LoginController
     $this->token_service->revokeAllTokens($user['id']);
     $this->token_service->saveToken($user['id'], $token, "BEARER", false, false);
 
-    // Respuesta modificada para incluir el rol
-    echo json_encode([
+    echo json_encode(TypeCaster::castRow([
         'user_id' => $user['id'],
         'token' => $token,
         'role' => $user['rol']
-    ]);
+    ]));
 }
 }

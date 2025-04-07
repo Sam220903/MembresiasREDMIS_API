@@ -28,7 +28,8 @@ class MembresiasController{
     }
 
     public function getMembresias(){
-        return $this->membresiasService->getMembresias();
+        $membresias = $this->membresiasService->getMembresias();
+        return TypeCaster::castRows($membresias);
     }
 
     public function postMembresia($data){

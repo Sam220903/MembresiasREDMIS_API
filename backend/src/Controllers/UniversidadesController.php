@@ -9,6 +9,7 @@ class UniversidadesController{
     
     public function listOfUniversidades(){
         $universidades = $this->service->getAllUniversidades();
+        $universidades = TypeCaster::castRows($universidades);
         
         // Formatear el resultado para incluir id y nombre
         $resultado = array_map(function($universidad) {

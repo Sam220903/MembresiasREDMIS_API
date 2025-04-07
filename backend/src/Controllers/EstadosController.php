@@ -8,7 +8,9 @@ class EstadosController{
     }
     
     public function listOfEstados(){
-        $universidades = $this->service->getAllEstados();
-        echo json_encode($universidades);
+        $estados = $this->service->getAllEstados();
+        $estados = TypeCaster::castRows($estados);
+        header('Content-Type: application/json');
+        echo json_encode($estados);
     }
 }

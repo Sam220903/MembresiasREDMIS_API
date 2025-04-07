@@ -21,6 +21,7 @@ class RoleController{
     public function changeRole($id, $data){
         if (empty($data['role'])) throw new Exception('Rol requerido');
         if (empty($id)) throw new Exception('ID requerido');
-        return $this->membersService->changeRole($id, $data);
+        $result = $this->membersService->changeRole($id, $data);
+        return TypeCaster::castRow($result);
     }
 }

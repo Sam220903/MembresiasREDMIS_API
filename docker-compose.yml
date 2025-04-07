@@ -12,5 +12,10 @@ services:
       MYSQL_PASSWORD: REDMIS
     ports:
       - "3306:3306"
+    networks:
+      - app_network
 volumes:
   db_data:
+
+networks:
+  app_network:

@@ -14,6 +14,7 @@ class MembresiaUsuarioController {
 
         $usuarioId = $data['usuarioId'];
         $membresias = $this->service->obtenerMembresiasPorUsuarioId($usuarioId);
+        $membresias = TypeCaster::castRows($membresias);
 
         return [
             'success' => true,
@@ -28,6 +29,7 @@ class MembresiaUsuarioController {
 
         $usuarioId = $data['usuarioId'];
         $membresias = $this->service->listarMembresiasUsuario($usuarioId);
+        $membresias = TypeCaster::castRows($membresias);
 
         return [
             'success' => true,
