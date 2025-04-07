@@ -71,7 +71,7 @@ try {
 switch ($route){
     // Ruta para obtener todos los usuarios
     case "test":
-        echo json_encode(["message" => "Este es el endpoint de prueba"]);
+        echo json_encode(["php_version" => phpversion()]);
         break;
 
     // Agregar más rutas aquí con su case:
