@@ -1,5 +1,5 @@
 services: 
-  db:
+  redmis_db:
     image: mysql
     volumes:
       - db_data:/var/lib/mysql
@@ -14,6 +14,27 @@ services:
       - "3306:3306"
     networks:
       - app_network
+    container_name: redmis_db
+
+  redmis_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html/backend
+    depends_on:
+      - redmis_db
+    networks:
+      - app_network
+    container_name: redmis_api
+    environment:
+      - DB_HOST=redmis_db
+      - DB_USER=mr_user
+      - DB_PASSWORD=REDMIS
+      - DB_NAME=mr_db
+
 volumes:
   db_data:
 
