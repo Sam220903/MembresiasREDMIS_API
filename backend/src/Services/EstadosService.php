@@ -13,4 +13,11 @@ class EstadosService{
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    function createEstado($nombre) {
+        $sql = "INSERT INTO MR_Estados (nombre) VALUES (:nombre)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':nombre', $nombre);
+        return $stmt->execute();
+    }
 }

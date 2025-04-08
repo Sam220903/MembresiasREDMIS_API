@@ -13,4 +13,11 @@ class UniversidadesService{
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function createUniversidad($nombre) {
+        $sql = "INSERT INTO MR_Universidades (nombre) VALUES (:nombre)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':nombre', $nombre);
+        return $stmt->execute();
+    }
 }

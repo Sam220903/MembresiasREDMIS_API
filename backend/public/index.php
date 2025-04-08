@@ -166,17 +166,44 @@ switch ($route){
     case "universidades":
         $universidadesService = new UniversidadesService($dbConnection);
         $universidadesController = new UniversidadesController($universidadesService);
-        $universidadesController->listOfUniversidades();
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $universidadesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+        } catch (\Throwable $th) {
+            http_response_code(400);
+            echo json_encode(['error'=> $th->getMessage()]);
+        }
         break;
     case "paises":
         $paisesService = new PaisesService($dbConnection);
         $paisesController = new PaisesController($paisesService);
-        $paisesController->listOfPaises();
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $paisesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+        } catch (\Throwable $th) {
+            http_response_code(400);
+            echo json_encode(['error'=> $th->getMessage()]);
+        }
         break;
     case "estados":
         $estadosService = new EstadosService($dbConnection);
         $estadosController = new EstadosController($estadosService);
-        $estadosController->listOfEstados();
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $estadosController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+        } catch (\Throwable $th) {
+            http_response_code(400);
+            echo json_encode(['error'=> $th->getMessage()]);
+        }
         break;
         
     case "membresiaUsuario":

@@ -7,10 +7,19 @@ class PaisesService{
         $this->conn = $conn;
     }
 
+    
+
     public function getAllPaises() {
         $sql = "SELECT id, nombre FROM MR_Paises";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function createPais($nombre) {
+        $sql = "INSERT INTO MR_Paises (nombre) VALUES (:nombre)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':nombre', $nombre);
+        return $stmt->execute();
     }
 }

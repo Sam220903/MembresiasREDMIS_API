@@ -23,7 +23,7 @@ class Database
 
 public function getConnection(): PDO
 {
-    $dns = "mysql:host={$this->host};dbname={$this->name};charset=utf8";
+    $dns = "mysql:host={$this->host};dbname={$this->name};charset=utf8mb4";
     return new PDO($dns, $this->user, $this->password);
 }
 }
