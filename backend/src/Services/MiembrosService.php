@@ -35,10 +35,24 @@ class MiembrosService{
     }
 
     public function deleteMiembro($id) {
-        $query = "DELETE FROM MR_Miembros WHERE id = :id";
+        // $query = "DELETE FROM MR_Miembros WHERE id = :id";
+        // $stmt = $this->connection->prepare($query);
+        // $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        // $stmt->execute();
+        $query = "UPDATE MR_Miembros SET activo = 0 WHERE id = :id";
         $stmt = $this->connection->prepare($query);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
+        try {
+            $query = "UPDATE MR_Login SET activo = 0 WHERE MR_Miembros_id = :id";
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+            $stmt->execute();
+        } catch (Exception $e) {
+            echo json_encode([
+                "error" => "Error al eliminar el login del miembro: " . $e->getMessage()
+            ]);
+        }
     }
     public function updateMember($id, $new){
         // Get the current member data with the actual IDs, not just names
@@ -127,6 +141,7 @@ class MiembrosService{
                 FROM MR_Miembros u
                 LEFT JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
                 LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
+                WHERE u.activo = 1
             )
             SELECT usuario_id, nombre_completo, rol, membresia, fecha_solicitud, estado
             FROM SolicitudesOrdenadas
@@ -166,7 +181,7 @@ class MiembrosService{
             LEFT JOIN MR_TiposUsuario ON MR_Miembros.MR_TiposUsuario_id = MR_TiposUsuario.id
             LEFT JOIN MR_Login ON MR_Miembros.id = MR_Login.MR_Miembros_id
             LEFT JOIN MR_ArchivosMiembros ON MR_Miembros.id = MR_ArchivosMiembros.MR_Miembros_id
-            WHERE MR_Miembros.id = :id;
+            WHERE MR_Miembros.id = :id AND MR_Miembros.activo = 1;
         ";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);

@@ -12,7 +12,7 @@
             $this->role_middleware = new RoleMiddleware();
         }
         
-        public function handleRequest(string $route, string $method, TokenService $token_gateway, string $id)
+        public function handleRequest(string $route, string $method, TokenService $token_gateway, string $id = null): array
         {
             if (in_array($route, $this->excluded_routes) || ($route === 'miembros' && $method === 'POST') || (($route === 'universidades' || $route === 'paises' || $route === 'estados' ) && $method === 'GET' && $id === null)) {
                 return [];

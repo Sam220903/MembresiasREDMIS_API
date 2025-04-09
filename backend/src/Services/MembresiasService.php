@@ -9,7 +9,7 @@ class MembresiasService {
     }
 
     public function getMembresias() {
-        $query = "SELECT * FROM MR_Membresias";
+        $query = "SELECT nombre, tipo FROM MR_Membresias WHERE activo = 1;";
         $stmt = $this->connection->prepare($query);
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -17,7 +17,7 @@ class MembresiasService {
     }
 
     public function getMembresia($id) {
-        $query = "SELECT * FROM MR_Membresias WHERE id = :id";
+        $query = "SELECT nombre, tipo FROM MR_Membresias WHERE id = :id AND activo = 1;";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -45,9 +45,13 @@ class MembresiasService {
     }
 
     public function deleteMembresias($id) {
-        $query = 'DELETE FROM MR_Membresias WHERE id = :id';
+        // $query = 'DELETE FROM MR_Membresias WHERE id = :id';
+        // $stmt = $this->connection->prepare($query);
+        // $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        // $stmt->execute();
+        $query = "UPDATE MR_Membresias SET activo = 0 WHERE id = :id";
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
     }
 }
