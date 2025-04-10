@@ -23,4 +23,20 @@ class MembresiaUsuarioService {
     public function listarMembresiasUsuario($usuarioId) {
         return $this->obtenerMembresiasPorUsuarioId($usuarioId);
     }
+
+    public function actualizarEstadoMembresia($id, $data){
+        $status = $data['estado'] == 1 ? 'ACTIVA' : 'INACTIVA';
+        $sql = 'UPDATE MR_MiembrosMembresias
+                SET estado = :estado
+                WHERE MR_Miembros_id = :member_id;';
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':estado', $status, PDO::PARAM_STR);
+        $stmt->bindParam(':member_id', $id, PDO::PARAM_INT);
+        
+        return [
+            'member_id' => $id, 
+            'done' => $stmt->execute()
+        ];
+    }
 }

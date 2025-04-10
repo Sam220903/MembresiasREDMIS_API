@@ -36,4 +36,13 @@ class MembresiaUsuarioController {
             'data' => $membresias
         ];
     }
+
+    public function actualizarEstadoMembresia($id, $data) : array {
+        if (!isset($id)) {
+            throw new Exception("Se requiere el ID del usuario en el cuerpo de la solicitud");
+        }
+        $respuesta = $this->service->actualizarEstadoMembresia( $id, $data);
+        $respuesta = TypeCaster::castRow($respuesta);
+        return $respuesta;
+    }
 }

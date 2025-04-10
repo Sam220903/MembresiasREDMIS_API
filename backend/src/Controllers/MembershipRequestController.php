@@ -34,18 +34,18 @@ class MembershipRequestController {
     public function acceptMembershipRequest($id) {
         $userPayload = $this->getUserFromToken();
 
-        if ($userPayload["role"] !== 1) {
+        if ($userPayload["role"] != 1) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
         }
-
+        $data = json_decode(file_get_contents('php://input'), true);
         try {
-            $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
+            $result = $this->membershipService->updateRequestStatus($id, 'APROBADA', $data['reason']);
             $result = TypeCaster::castRow($result);
 
             /* Temporarily disabled email sending for debugging
-            $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf');
+            $pdfPath = $this->mailerService->normalizePdfPath(' /path/to/membership.pdf');
 
             $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], [
                 'path' => $pdfPath,
@@ -64,7 +64,7 @@ class MembershipRequestController {
     public function rejectMembershipRequest($id) {
         $userPayload = $this->getUserFromToken();
 
-        if ($userPayload["role"] !== 1) {
+        if ($userPayload["role"] != 1) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;

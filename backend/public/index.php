@@ -253,6 +253,24 @@ switch ($route){
             echo json_encode(["error" => $e->getMessage()]);
         }
         break;
+    
+    case "actualizarEstadoMembresia":
+        $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
+        $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+        
+        $data = $_POST;
+        if (empty($data)) {
+            $data = (array) json_decode(file_get_contents("php://input"), true);
+        }
+        
+        try {
+            $response = $membresiaUsuarioController->actualizarEstadoMembresia($id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["success" => false, "message" => $e->getMessage()]);
+        }
+        break;
 
     default:
         http_response_code(404);
