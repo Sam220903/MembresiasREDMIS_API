@@ -12,6 +12,31 @@ class MembershipApplication {
         $stmt->execute([':userId' => $userId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function getUserAndMembershipInfo($userId, $membershipId) {
+        // Obtener información del usuario
+        $stmt = $this->pdo->prepare("SELECT nombre, email FROM MR_Miembros WHERE id = :userId");
+        $stmt->execute([':userId' => $userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$user) {
+            throw new \Exception("Usuario no encontrado.");
+        }
+    
+        // Obtener información de la membresía
+        $stmt = $this->pdo->prepare("SELECT nombre FROM MR_Membresia WHERE id = :membershipId");
+        $stmt->execute([':membershipId' => $membershipId]);
+        $membership = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$membership) {
+            throw new \Exception("Tipo de membresía no encontrado.");
+        }
+    
+        return [
+            'userName' => $user['nombre'],
+            'userEmail' => $user['email'],
+            'membershipType' => $membership['nombre']
+        ];
+    }
 
     public function create($userId, $data) {
         $stmt = $this->pdo->prepare("INSERT INTO MR_SolicitudesMembresia (MR_Miembros_id, MR_Membresias_id, estado, comentarios) 
