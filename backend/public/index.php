@@ -91,11 +91,12 @@ switch ($route){
         break;
 
     case "solicitarMembresia":
-        $service = new MembershipApplicationService($dbConnection); 
-        $mailerService = new MailerService();//  Ahora recibe la conexión
-        $controller = new MembershipApplicationController($service , $mailerService);
-        $controller->registerMembership();
-        break;
+            $service = new MembershipApplicationService($dbConnection);
+            $mailerService = new MailerService();
+            $notificationService = new MembershipNotificationService($dbConnection);
+            $controller = new MembershipApplicationController($service, $mailerService, $notificationService);
+            $controller->registerMembership();
+            break;
     // Ruta de aceptar una membresía
     case "aceptarMembresia":
         $membershipService = new MembershipService($dbConnection); // Ahora recibe la conexión

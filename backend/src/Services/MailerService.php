@@ -8,7 +8,6 @@ require __DIR__ . '/../PHPMailer/Exception.php';
 require __DIR__ . '/../PHPMailer/SMTP.php';
 class MailerService {
     private $mail;
-    private $adminEmail = 'gerardoans28@gmail.com';
     private $fromEmail = 'membresias-noreplay@lumacad.com.mx';
     private $fromName = 'Membresias Redmis';
     private $rootPath = __DIR__ . '/../../public/';
@@ -31,10 +30,10 @@ class MailerService {
     }
 
     // 📩 Notifica al administrador sobre una nueva solicitud de membresía
-    public function notifyAdmin($userName = 'Usuario', $userEmail = 'No disponible', $membershipType = 'No especificado'): bool {
+    public function notifyAdmin($adminEmail, $userName, $userEmail, $membershipType) {
         try {
             $this->mail->clearAddresses();
-            $this->mail->addAddress($this->adminEmail); // Usar la propiedad adminEmail que ya estaba definida
+            $this->mail->addAddress($adminEmail);
             $this->mail->isHTML(true);
             $this->mail->Subject = "Nueva Solicitud de Membresía - " . $membershipType;
             
@@ -53,7 +52,6 @@ class MailerService {
             return false;
         }
     }
-    
     // 📩 Envía confirmación al usuario con su membresía en PDF
     public function sendMembershipApproval($userEmail, $userName, $pdfInfo) {
         try {

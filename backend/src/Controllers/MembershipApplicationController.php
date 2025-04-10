@@ -3,12 +3,18 @@
 class MembershipApplicationController {
     private $membershipApplicationService;
     private $mailerService;
-    public function __construct(MembershipApplicationService $membershipApplicationService , MailerService $mailerService) {
+    private $notificationService;
+    
+    public function __construct(MembershipApplicationService $membershipApplicationService, 
+    MailerService $mailerService,
+    MembershipNotificationService $notificationService) {
         $this->membershipApplicationService = $membershipApplicationService;
         $this->mailerService = $mailerService;
+        $this->notificationService = $notificationService;
     }
 
     private function getUserFromToken() {
+        // Este método se mantiene igual
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? '';
 
@@ -32,36 +38,48 @@ class MembershipApplicationController {
 
     public function registerMembership() {
         $userPayload = $this->getUserFromToken();
-    
+
         $data = json_decode(file_get_contents('php://input'), true);
         if (!isset($data['MR_Membresias_id']) || !isset($data['cv']) || !isset($data['telefono'])) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Todos los campos requeridos deben ser proporcionados."]);
             exit;
         }
-    
+
         try {
-            // Primero, obtener el nombre y email del usuario
-            $userId = $userPayload['id'];
-            $userData = $this->membershipApplicationService->getUserData($userId);
+            $result = $this->membershipApplicationService->createApplication($userPayload['id'], $data);
             
-            // Obtener el tipo de membresía solicitada
-            $membershipData = $this->membershipApplicationService->getMembershipData($data['MR_Membresias_id']);
-            
-            // Registrar la solicitud
-            $result = $this->membershipApplicationService->createApplication($userId, $data);
-            
-            // Ahora sí, enviamos la notificación con los datos completos
-            $this->mailerService->notifyAdmin(
-                $userData['nombre'] . ' ' . $userData['apellidos'], 
-                $userData['email'], 
-                $membershipData['nombre']
+            // Obtener datos para la notificación
+            $membershipData = $this->notificationService->getMembershipApplicationData(
+                $userPayload['id'], 
+                $data['MR_Membresias_id']
             );
-           
+            
+            $adminEmail = $this->notificationService->getAdminEmail();
+            
+            $emailStatus = "pero hubo un problema al enviar el correo";
+            
+            if ($membershipData && $adminEmail) {
+                $userName = $membershipData['nombre'] . ' ' . $membershipData['apellidos'];
+                $userEmail = $membershipData['userEmail'];
+                $membershipType = $membershipData['membershipType'];
+                
+                $notificationSent = $this->mailerService->notifyAdmin(
+                    $adminEmail, 
+                    $userName, 
+                    $userEmail, 
+                    $membershipType
+                );
+                
+                if ($notificationSent) {
+                    $emailStatus = "y correo enviado";
+                }
+            }
+            
             http_response_code(201);
             echo json_encode([
                 "status" => "success", 
-                "message" => "Solicitud de membresía enviada exitosamente y correo enviado", 
+                "message" => "Solicitud de membresía enviada exitosamente " . $emailStatus, 
                 "data" => $result
             ]);
         } catch (\Exception $e) {
