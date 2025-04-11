@@ -7,7 +7,7 @@ class MembershipService {
         $this->membershipRequestModel = new MembershipRequest($dbConnection);
     }
 
-    public function updateRequestStatus($id, $status, $reason = null) {
+    public function updateRequestStatus($id, $status, $reason = null): array {
         $request = $this->membershipRequestModel->findById($id);
 
         if (!$request) {

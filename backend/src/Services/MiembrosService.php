@@ -233,7 +233,7 @@ class MiembrosService{
         return $member;
     }
 
-    public function changeRole(string $id, array $data): bool {
+    public function changeRole(string $id, array $data): array {
         if (empty($id) || !is_numeric($id)) {
             throw new Exception('ID inválido. Debe ser un número.');
         }
@@ -243,7 +243,10 @@ class MiembrosService{
         $stmt->bindValue(":newRole", $data['role'], PDO::PARAM_INT);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         
-        return $stmt->execute();
+        return [
+            "id" => $id,
+            "done" => $stmt->execute()
+        ];
     }
     
 }
