@@ -9,7 +9,7 @@ class MembresiasService {
     }
 
     public function getMembresias() {
-        $query = "SELECT nombre, tipo FROM MR_Membresias WHERE activo = 1;";
+        $query = "SELECT id, nombre, tipo FROM MR_Membresias WHERE activo = 1;";
         $stmt = $this->connection->prepare($query);
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);

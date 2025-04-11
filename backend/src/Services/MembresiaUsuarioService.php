@@ -33,10 +33,22 @@ class MembresiaUsuarioService {
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':estado', $status, PDO::PARAM_STR);
         $stmt->bindParam(':member_id', $id, PDO::PARAM_INT);
+
+
         
         return [
             'member_id' => $id, 
-            'done' => $stmt->execute()
+            'done' => $stmt->execute() && $this->actualizarEstadoMiembro($id, $data)
         ];
+    }
+
+    public function actualizarEstadoMiembro($id, $data){
+        $sql = 'UPDATE MR_Miembros
+                SET MR_EstatusMiembros_id = :estado
+                WHERE id = :member_id;';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':estado', $data['estado'], PDO::PARAM_INT);
+        $stmt->bindParam(':member_id', $id, PDO::PARAM_INT);
+        $stmt->execute();
     }
 }
