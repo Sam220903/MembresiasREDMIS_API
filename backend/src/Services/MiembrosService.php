@@ -6,23 +6,47 @@ class MiembrosService{
     public function __construct($connection){
         $this->connection=$connection;
     }
-
-    public function postMiembro($data){
-        $query="INSERT INTO MR_Miembros (nombre,apellidos,genero,MR_Universidades_id,MR_Estados_id,MR_Paises_id, MR_TiposUsuario_id) VALUES (:nombre,:apellidos,:genero,:MR_Universidades_id,:MR_Estados_id,:MR_Paises_id, 2) ";
-        $stmt=$this->connection->prepare($query);
-        $stmt->bindValue(":nombre",$data["nombre"]);
-        $stmt->bindValue(":apellidos",$data["apellidos"]);
-        $stmt->bindValue(":genero",$data["genero"]);
-        $stmt->bindValue(":MR_Universidades_id",$data["universidad"] ?? null);
-        $stmt->bindValue(":MR_Estados_id",$data["estado"] ?? null);
-        $stmt->bindValue(":MR_Paises_id",$data["paises"] ?? null);
-
+    public function postMiembro($data) {
+        // Generar código de verificación
+        $codigo = $this->generarCodigoVerificacion();
+        
+        $query = "INSERT INTO MR_Miembros (nombre, apellidos, genero, codigo, verificado, MR_Universidades_id, MR_Estados_id, MR_Paises_id, MR_TiposUsuario_id) 
+                  VALUES (:nombre, :apellidos, :genero, :codigo, 0, :MR_Universidades_id, :MR_Estados_id, :MR_Paises_id, 2)";
+        
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":nombre", $data["nombre"]);
+        $stmt->bindValue(":apellidos", $data["apellidos"]);
+        $stmt->bindValue(":genero", $data["genero"]);
+        $stmt->bindValue(":codigo", $codigo);  // Usar el código generado
+        $stmt->bindValue(":MR_Universidades_id", $data["universidad"] ?? null);
+        $stmt->bindValue(":MR_Estados_id", $data["estado"] ?? null);
+        $stmt->bindValue(":MR_Paises_id", $data["paises"] ?? null);
+    
         $stmt->execute();
-        $miembroId=$this->connection->lastInsertId();
-        $this->postLogin($miembroId,$data);
-        return $miembroId;
-
+        $miembroId = $this->connection->lastInsertId();
+        $this->postLogin($miembroId, $data);
+        
+        // Devolver también el código generado para poder enviarlo por email
+        return ["id" => $miembroId, "codigo" => $codigo];
     }
+
+    public function verificarMiembro(int $id, string $codigo): bool {
+        $query = "UPDATE MR_Miembros 
+                 SET verificado = 1, codigo = NULL 
+                 WHERE id = :id AND codigo = :codigo AND verificado = 0";
+        
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->bindValue(":codigo", $codigo);
+        $stmt->execute();
+        
+        return $stmt->rowCount() > 0;
+    }
+
+    private function generarCodigoVerificacion(): string {
+        return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+    
 
     public function postLogin($miembroId,$data){
         $query="INSERT INTO MR_Login (MR_Miembros_id,email,password_hash) VALUES (:MR_Miembros_id,:email,:password_hash) ";
@@ -35,24 +59,10 @@ class MiembrosService{
     }
 
     public function deleteMiembro($id) {
-        // $query = "DELETE FROM MR_Miembros WHERE id = :id";
-        // $stmt = $this->connection->prepare($query);
-        // $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        // $stmt->execute();
-        $query = "UPDATE MR_Miembros SET activo = 0 WHERE id = :id";
+        $query = "DELETE FROM MR_Miembros WHERE id = :id";
         $stmt = $this->connection->prepare($query);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
-        try {
-            $query = "UPDATE MR_Login SET activo = 0 WHERE MR_Miembros_id = :id";
-            $stmt = $this->connection->prepare($query);
-            $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-            $stmt->execute();
-        } catch (Exception $e) {
-            echo json_encode([
-                "error" => "Error al eliminar el login del miembro: " . $e->getMessage()
-            ]);
-        }
     }
     public function updateMember($id, $new){
         // Get the current member data with the actual IDs, not just names
@@ -115,7 +125,31 @@ class MiembrosService{
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
     }
-
+    public function getMiembroByEmail($email) {
+        $query = "SELECT m.id, m.nombre, m.codigo FROM MR_Miembros m 
+                  JOIN MR_Login l ON m.id = l.MR_Miembros_id 
+                  WHERE l.email = :email";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":email", $email);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function reenviarCodigo($email) {
+        $miembro = $this->getMiembroByEmail($email);
+        if (!$miembro) {
+            return false;
+        }
+        
+        $codigo = $this->generarCodigoVerificacion();
+        $query = "UPDATE MR_Miembros SET codigo = :codigo WHERE id = :id";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindValue(":codigo", $codigo);
+        $stmt->bindValue(":id", $miembro['id'], PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return ["nombre" => $miembro["nombre"], "codigo" => $codigo];
+    }
 
     public function getAllMembers(): array {
         $sql = "
@@ -141,7 +175,6 @@ class MiembrosService{
                 FROM MR_Miembros u
                 LEFT JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
                 LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
-                WHERE u.activo = 1
             )
             SELECT usuario_id, nombre_completo, rol, membresia, fecha_solicitud, estado
             FROM SolicitudesOrdenadas
@@ -181,7 +214,7 @@ class MiembrosService{
             LEFT JOIN MR_TiposUsuario ON MR_Miembros.MR_TiposUsuario_id = MR_TiposUsuario.id
             LEFT JOIN MR_Login ON MR_Miembros.id = MR_Login.MR_Miembros_id
             LEFT JOIN MR_ArchivosMiembros ON MR_Miembros.id = MR_ArchivosMiembros.MR_Miembros_id
-            WHERE MR_Miembros.id = :id AND MR_Miembros.activo = 1;
+            WHERE MR_Miembros.id = :id;
         ";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -200,7 +233,7 @@ class MiembrosService{
         return $member;
     }
 
-    public function changeRole(string $id, array $data): array {
+    public function changeRole(string $id, array $data): bool {
         if (empty($id) || !is_numeric($id)) {
             throw new Exception('ID inválido. Debe ser un número.');
         }
@@ -210,13 +243,8 @@ class MiembrosService{
         $stmt->bindValue(":newRole", $data['role'], PDO::PARAM_INT);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         
-        return [
-            "id" => $id,
-            "changed" => $stmt->execute()
-        ];
+        return $stmt->execute();
     }
     
 }
 ?>
-
-

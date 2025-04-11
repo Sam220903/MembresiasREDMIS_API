@@ -14,7 +14,7 @@
         
         public function handleRequest(string $route, string $method, TokenService $token_gateway, string $id = null): array
         {
-            if (in_array($route, $this->excluded_routes) || ($route === 'miembros' && $method === 'POST') || (($route === 'universidades' || $route === 'paises' || $route === 'estados' ) && $method === 'GET' && $id === null)) {
+            if (in_array($route, $this->excluded_routes) || ($route === 'miembros' && $method === 'POST')|| ($route === 'verify' && $method === 'POST')|| ($route === 'resend_code' && $method === 'POST') || (($route === 'universidades' || $route === 'paises' || $route === 'estados' ) && $method === 'GET' && $id === null)) {
                 return [];
             }
 
