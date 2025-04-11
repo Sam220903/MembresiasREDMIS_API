@@ -70,7 +70,6 @@ try {
 
 // Este switch se encarga de manejar las rutas de la API
 switch ($route){
-        // Ruta para obtener todos los usuarios
     // Ruta para obtener todos los usuarios
     case "test":
         echo json_encode(["php_version" => phpversion()]);
@@ -90,12 +89,18 @@ switch ($route){
         $controller->processRequest($_SERVER["REQUEST_METHOD"]);
         break;
 
-    case "solicitarMembresia":
-        $service = new MembershipApplicationService($dbConnection); 
-        $mailerService = new MailerService();//  Ahora recibe la conexión
-        $controller = new MembershipApplicationController($service , $mailerService);
-        $controller->registerMembership();
+    //Ruta para solicitar membresias
+    case "solicitudesMembresias":
+        $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection); // Pass the connection object
+        $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
+        try {
+            $solicitudesMembresiasController->processRequest($_SERVER['REQUEST_METHOD'], $id);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
         break;
+
     // Ruta de aceptar una membresía
     case "aceptarMembresia":
         $membershipService = new MembershipService($dbConnection); // Ahora recibe la conexión
@@ -111,6 +116,7 @@ switch ($route){
         $controller = new MembershipRequestController($membershipService, $mailerService);
         $controller->rejectMembershipRequest($id);
         break;
+
 
     case "membresias":
         $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
@@ -129,7 +135,6 @@ switch ($route){
         }
         break;
 
-    
     case "solicitudesMembresias":
         $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection); // Pass the connection object
         $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
@@ -147,7 +152,7 @@ switch ($route){
         $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
         break;
 
-    case "miembros":
+        case "miembros":
             $mailerService = new MailerService();
             $miembrosService = new MiembrosService($dbConnection);
             $miembrosController = new MiembrosController($miembrosService, $mailerService);
@@ -168,42 +173,41 @@ switch ($route){
                 ]);
             }
             break;
-// Verificar usuario por email
-    case "verify":
-        $mailerService = new MailerService();
-        $miembrosService = new MiembrosService($dbConnection);
-        $miembrosController = new MiembrosController($miembrosService, $mailerService);
-        $data = (array) json_decode(file_get_contents("php://input"), true);
-        try {
-            $response = $miembrosController->verifyByEmail($data);
-            echo json_encode($response);
-        } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
-        break;
+        case "verify":
+                $mailerService = new MailerService();
+                $miembrosService = new MiembrosService($dbConnection);
+                $miembrosController = new MiembrosController($miembrosService, $mailerService);
+                $data = (array) json_decode(file_get_contents("php://input"), true);
+                try {
+                    $response = $miembrosController->verifyByEmail($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code($e->getCode() ?: 400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $e->getMessage()
+                    ]);
+                }
+                break;
 
-    // Reenviar código de verificación
-    case "resend-code":
-        $mailerService = new MailerService();
-        $miembrosService = new MiembrosService($dbConnection);
-        $miembrosController = new MiembrosController($miembrosService, $mailerService);
-        $data = (array) json_decode(file_get_contents("php://input"), true);
-        try {
-            $response = $miembrosController->resendVerificationCode($data);
-            echo json_encode($response);
-        } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 400);
-            echo json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
-        break;
- 
+            // Reenviar código de verificación
+        case "resend-code":
+                $mailerService = new MailerService();
+                $miembrosService = new MiembrosService($dbConnection);
+                $miembrosController = new MiembrosController($miembrosService, $mailerService);
+                $data = (array) json_decode(file_get_contents("php://input"), true);
+                try {
+                    $response = $miembrosController->resendVerificationCode($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code($e->getCode() ?: 400);
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $e->getMessage()
+                    ]);
+                }
+                break;
+
     case "universidades":
         $universidadesService = new UniversidadesService($dbConnection);
         $universidadesController = new UniversidadesController($universidadesService);
@@ -217,7 +221,7 @@ switch ($route){
             http_response_code(400);
             echo json_encode(['error'=> $th->getMessage()]);
         }
-    break;
+        break;
     case "paises":
         $paisesService = new PaisesService($dbConnection);
         $paisesController = new PaisesController($paisesService);
@@ -245,55 +249,55 @@ switch ($route){
             http_response_code(400);
             echo json_encode(['error'=> $th->getMessage()]);
         }
-    break;
-    
+        break;
+        
     case "membresiaUsuario":
-        $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
-        $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
-        
+            $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
+            $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+            
+            $data = $_POST;
+            if (empty($data)) {
+                $data = (array) json_decode(file_get_contents("php://input"), true);
+            }
+            
+            // Si hay un ID en la URL, es para obtener una membresía específica
+            if ($id) {
+                $data['usuarioId'] = $id; // Asignamos el ID de la URL como usuarioId
+                try {
+                    $response = $membresiaUsuarioController->obtenerMembresiaUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            } 
+            // Si no hay ID, es para listar todas las membresías de un usuario (necesita usuarioId en el body)
+            else {
+                try {
+                    $response = $membresiaUsuarioController->listarMembresiasUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            }
+            break;
+
+    case "cambiarRol":
+        $miembrosService = new MiembrosService($dbConnection);
+        $roleController = new RoleController($miembrosService);
         $data = $_POST;
-        if (empty($data)) {
-            $data = (array) json_decode(file_get_contents("php://input"), true);
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
-        
-        // Si hay un ID en la URL, es para obtener una membresía específica
-        if ($id) {
-            $data['usuarioId'] = $id; // Asignamos el ID de la URL como usuarioId
-            try {
-                $response = $membresiaUsuarioController->obtenerMembresiaUsuario($data);
-                echo json_encode($response);
-            } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode(["success" => false, "message" => $e->getMessage()]);
-            }
-        } 
-        // Si no hay ID, es para listar todas las membresías de un usuario (necesita usuarioId en el body)
-        else {
-            try {
-                $response = $membresiaUsuarioController->listarMembresiasUsuario($data);
-                echo json_encode($response);
-            } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode(["success" => false, "message" => $e->getMessage()]);
-            }
+        try {
+            $response = $roleController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
         }
         break;
-
-case "cambiarRol":
-    $miembrosService = new MiembrosService($dbConnection);
-    $roleController = new RoleController($miembrosService);
-    $data = $_POST;
-    if (empty($data)){
-        $data = (array) json_decode(file_get_contents("PHP://input"), true);
-    }
-    try {
-        $response = $roleController->handleRequest($_SERVER, $id, $data);
-        echo json_encode($response);
-    } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode(["error" => $e->getMessage()]);
-    }
-    break;
     
     case "actualizarEstadoMembresia":
         $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
