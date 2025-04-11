@@ -90,15 +90,10 @@ switch ($route){
         break;
 
     //Ruta para solicitar membresias
-    case "solicitudesMembresias":
-        $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection); // Pass the connection object
-        $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
-        try {
-            $solicitudesMembresiasController->processRequest($_SERVER['REQUEST_METHOD'], $id);
-        } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(["error" => $e->getMessage()]);
-        }
+    case "solicitarMembresia":
+        $service = new MembershipApplicationService($dbConnection); //  Ahora recibe la conexión
+        $controller = new MembershipApplicationController($service);
+        $controller->registerMembership();
         break;
 
     // Ruta de aceptar una membresía
@@ -116,7 +111,6 @@ switch ($route){
         $controller = new MembershipRequestController($membershipService, $mailerService);
         $controller->rejectMembershipRequest($id);
         break;
-
 
     case "membresias":
         $membresiasService = new MembresiasService($dbConnection); // Pass the connection object
@@ -152,61 +146,22 @@ switch ($route){
         $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
         break;
 
-        case "miembros":
-            $mailerService = new MailerService();
-            $miembrosService = new MiembrosService($dbConnection);
-            $miembrosController = new MiembrosController($miembrosService, $mailerService);
-        
-            $data = $_POST;
-            if (empty($data)) {
-                $data = (array) json_decode(file_get_contents("php://input"), true);
-            }
-        
-            try {
-                $response = $miembrosController->handleRequest($_SERVER, $id, $data);
-                echo json_encode($response);
-            } catch (Exception $e) {
-                http_response_code($e->getCode() ?: 400);
-                echo json_encode([
-                    'error' => $e->getMessage(),
-                    'success' => false
-                ]);
-            }
-            break;
-        case "verify":
-                $mailerService = new MailerService();
-                $miembrosService = new MiembrosService($dbConnection);
-                $miembrosController = new MiembrosController($miembrosService, $mailerService);
-                $data = (array) json_decode(file_get_contents("php://input"), true);
-                try {
-                    $response = $miembrosController->verifyByEmail($data);
-                    echo json_encode($response);
-                } catch (Exception $e) {
-                    http_response_code($e->getCode() ?: 400);
-                    echo json_encode([
-                        'success' => false,
-                        'message' => $e->getMessage()
-                    ]);
-                }
-                break;
+    case "miembros": 
+        $miembrosService = new MiembrosService($dbConnection);
+        $miembrosController = new MiembrosController($miembrosService);
 
-            // Reenviar código de verificación
-        case "resend-code":
-                $mailerService = new MailerService();
-                $miembrosService = new MiembrosService($dbConnection);
-                $miembrosController = new MiembrosController($miembrosService, $mailerService);
-                $data = (array) json_decode(file_get_contents("php://input"), true);
-                try {
-                    $response = $miembrosController->resendVerificationCode($data);
-                    echo json_encode($response);
-                } catch (Exception $e) {
-                    http_response_code($e->getCode() ?: 400);
-                    echo json_encode([
-                        'success' => false,
-                        'message' => $e->getMessage()
-                    ]);
-                }
-                break;
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $response = $miembrosController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
 
     case "universidades":
         $universidadesService = new UniversidadesService($dbConnection);
