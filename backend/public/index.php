@@ -148,27 +148,27 @@ switch ($route){
         $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
         break;
 
-        case "miembros":
-            $mailerService = new MailerService();
-            $miembrosService = new MiembrosService($dbConnection);
-            $miembrosController = new MiembrosController($miembrosService, $mailerService);
-        
-            $data = $_POST;
-            if (empty($data)) {
-                $data = (array) json_decode(file_get_contents("php://input"), true);
-            }
-        
-            try {
-                $response = $miembrosController->handleRequest($_SERVER, $id, $data);
-                echo json_encode($response);
-            } catch (Exception $e) {
-                http_response_code($e->getCode() ?: 400);
-                echo json_encode([
-                    'error' => $e->getMessage(),
-                    'success' => false
-                ]);
-            }
-            break;
+    case "miembros":
+        $mailerService = new MailerService();
+        $miembrosService = new MiembrosService($dbConnection);
+        $miembrosController = new MiembrosController($miembrosService, $mailerService);
+    
+        $data = $_POST;
+        if (empty($data)) {
+            $data = (array) json_decode(file_get_contents("php://input"), true);
+        }
+    
+        try {
+            $response = $miembrosController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'success' => false
+            ]);
+        }
+        break;
         // Verificar usuario por email
     case "verify":
         $mailerService = new MailerService();
