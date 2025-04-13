@@ -9,7 +9,6 @@ $connection = [
 ];
 
 
-
 // La configuración fallback se usa cuando las variables de entorno no están disponibles
 // Configuración de la base de datos de PRODUCCIÓN
 
