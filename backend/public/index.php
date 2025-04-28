@@ -314,8 +314,15 @@ switch ($route){
         }
         break;
 
+    case "uploadFile":
+        $fileUploadService = new FileUploadService();
+        $fileUploadController = new FileUploadController($fileUploadService);
+        $fileUploadController->processRequest();
+        break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
         break;
 }
+
