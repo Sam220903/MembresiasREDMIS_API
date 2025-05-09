@@ -194,7 +194,9 @@ class MiembrosService{
             SELECT 
                 MR_Miembros.id,
                 " . ($includeSensitive ? "MR_Miembros.nombre, MR_Miembros.apellidos," : "") . "
-                CONCAT(MR_Miembros.nombre, ' ', MR_Miembros.apellidos) AS nombre_completo,
+                MR_Miembros.nombre AS nombre,
+                " . ($includeSensitive ? "MR_Miembros.nombre, MR_Miembros.apellidos," : "") . "
+                MR_Miembros.apellidos AS apellidos,
                 MR_Miembros.genero,
                 MR_Miembros.fecha_registro,
                 MR_Miembros.ultima_actualizacion,
@@ -224,13 +226,35 @@ class MiembrosService{
         if (!$member) {
             throw new Exception('No se encontró un miembro con el ID proporcionado.');
         }
+
+
+        $response = [
+            'id' => $member['id'],
+            'nombre' => $member['nombre'],
+            'apellidos' => $member['apellidos'],
+            'genero' => $member['genero'],
+            'fecha_registro' => $member['fecha_registro'],
+            'ultima_actualizacion' => $member['ultima_actualizacion'],
+            'universidad' => $member['universidad'],
+            'estado' => $member['estado'],
+            'pais' => $member['pais'],
+            'estatus' => $member['estatus'],
+            'tipo_usuario' => $member['tipo_usuario'],
+            'email' => $member['email'],
+            'ultimo_acceso' => $member['ultimo_acceso']
+        ];
+
+
+        $filepath = '../src/pdfs/cvs/' . $member['cv'];
+
+        if ($member) $response['cv_base64'] = base64_encode(file_get_contents($filepath));
     
-        if (!$includeSensitive) {
-            unset($member['nombre']);
-            unset($member['apellidos']);
-        }
+        // if (!$includeSensitive) {
+        //     unset($member['nombre']);
+        //     unset($member['apellidos']);
+        // }
     
-        return $member;
+        return $response;
     }
 
     public function changeRole(string $id, array $data): array {
