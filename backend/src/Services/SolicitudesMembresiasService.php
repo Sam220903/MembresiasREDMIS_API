@@ -60,7 +60,25 @@ class SolicitudesMembresiasService {
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $response = [
+            'id' => $result['id'],
+            'nombre' => $result['nombre'],
+            'email' => $result['email'],
+            'membresia' => $result['membresia'],
+            'estado' => $result['estado'],
+            'fecha_solicitud' => $result['fecha_solicitud'],
+            'comentarios' => $result['comentarios'],
+            'cv' => $result['cv']
+        ];
+
+
+        $filepath = '../src/pdfs/cvs/' . $result['cv'];
+
+        if ($result) $response['cv_base64'] = base64_encode(file_get_contents($filepath));
+
+        return $response;
     }
 
 }
