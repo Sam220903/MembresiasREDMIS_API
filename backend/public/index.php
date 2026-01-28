@@ -9,6 +9,7 @@ spl_autoload_register(function ($class) {
         __DIR__ . "/../src/Services/",
         __DIR__ . "/../src/Models/",
         __DIR__ . "/../src/Middleware/",
+        __DIR__ . "/../src/Helpers/"
     ];
 
     foreach ($directories as $directory) {
@@ -21,7 +22,11 @@ spl_autoload_register(function ($class) {
 });
 
 include_once '../src/Config/header.php';
-include_once '../src/config/config.php';
+$configPath = __DIR__ . '/../src/Config/config.php';
+if (!file_exists($configPath)) {
+    die("Error: El archivo de configuración no existe en la ruta esperada.");
+}
+include_once $configPath;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     // Just exit with 200 OK status
@@ -67,7 +72,7 @@ try {
 switch ($route){
     // Ruta para obtener todos los usuarios
     case "test":
-        echo json_encode(["message" => "Este es el endpoint de prueba"]);
+        echo json_encode(["php_version" => phpversion()]);
         break;
 
     // Agregar más rutas aquí con su case:
@@ -86,8 +91,10 @@ switch ($route){
 
     //Ruta para solicitar membresias
     case "solicitarMembresia":
-        $service = new MembershipApplicationService($dbConnection); //  Ahora recibe la conexión
-        $controller = new MembershipApplicationController($service);
+        $service = new MembershipApplicationService($dbConnection);
+        $mailerService = new MailerService();
+        $notificationService = new MembershipNotificationService($dbConnection);
+        $controller = new MembershipApplicationController($service, $mailerService, $notificationService);
         $controller->registerMembership();
         break;
 
@@ -128,8 +135,7 @@ switch ($route){
         $solicitudesMembresiasService = new SolicitudesMembresiasService($dbConnection); // Pass the connection object
         $solicitudesMembresiasController = new SolicitudesMembresiasController($solicitudesMembresiasService);
         try {
-            $response = $solicitudesMembresiasController->getSolicitudesMembresias($_SERVER);
-            echo json_encode($response);
+            $solicitudesMembresiasController->processRequest($_SERVER['REQUEST_METHOD'], $id);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(["error" => $e->getMessage()]);
@@ -142,41 +148,181 @@ switch ($route){
         $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
         break;
 
-    case "miembros": 
+    case "miembros":
+        $mailerService = new MailerService();
         $miembrosService = new MiembrosService($dbConnection);
-        $miembrosController = new MiembrosController($miembrosService);
-
+        $miembrosController = new MiembrosController($miembrosService, $mailerService);
+    
         $data = $_POST;
-        if (empty($data)){
-            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        if (empty($data)) {
+            $data = (array) json_decode(file_get_contents("php://input"), true);
         }
-
+    
         try {
             $response = $miembrosController->handleRequest($_SERVER, $id, $data);
             echo json_encode($response);
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(["error" => $e->getMessage()]);
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'success' => false
+            ]);
+        }
+        break;
+        // Verificar usuario por email
+    case "verify":
+        $mailerService = new MailerService();
+        $miembrosService = new MiembrosService($dbConnection);
+        $miembrosController = new MiembrosController($miembrosService, $mailerService);
+        $data = (array) json_decode(file_get_contents("php://input"), true);
+        try {
+            $response = $miembrosController->verifyByEmail($data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        break;
+
+    // Reenviar código de verificación
+    case "resend-code":
+        $mailerService = new MailerService();
+        $miembrosService = new MiembrosService($dbConnection);
+        $miembrosController = new MiembrosController($miembrosService, $mailerService);
+        $data = (array) json_decode(file_get_contents("php://input"), true);
+        try {
+            $response = $miembrosController->resendVerificationCode($data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code($e->getCode() ?: 400);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
         break;
 
     case "universidades":
         $universidadesService = new UniversidadesService($dbConnection);
         $universidadesController = new UniversidadesController($universidadesService);
-        $universidadesController->listOfUniversidades();
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $universidadesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+        } catch (\Throwable $th) {
+            http_response_code(400);
+            echo json_encode(['error'=> $th->getMessage()]);
+        }
         break;
     case "paises":
         $paisesService = new PaisesService($dbConnection);
         $paisesController = new PaisesController($paisesService);
-        $paisesController->listOfPaises();
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $paisesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+        } catch (\Throwable $th) {
+            http_response_code(400);
+            echo json_encode(['error'=> $th->getMessage()]);
+        }
         break;
     case "estados":
         $estadosService = new EstadosService($dbConnection);
         $estadosController = new EstadosController($estadosService);
-        $estadosController->listOfEstados();
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $estadosController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+        } catch (\Throwable $th) {
+            http_response_code(400);
+            echo json_encode(['error'=> $th->getMessage()]);
+        }
         break;
+        
+    case "membresiaUsuario":
+            $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
+            $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+            
+            $data = $_POST;
+            if (empty($data)) {
+                $data = (array) json_decode(file_get_contents("php://input"), true);
+            }
+            
+            // Si hay un ID en la URL, es para obtener una membresía específica
+            if ($id) {
+                $data['usuarioId'] = $id; // Asignamos el ID de la URL como usuarioId
+                try {
+                    $response = $membresiaUsuarioController->obtenerMembresiaUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            } 
+            // Si no hay ID, es para listar todas las membresías de un usuario (necesita usuarioId en el body)
+            else {
+                try {
+                    $response = $membresiaUsuarioController->listarMembresiasUsuario($data);
+                    echo json_encode($response);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+                }
+            }
+            break;
+
+    case "cambiarRol":
+        $miembrosService = new MiembrosService($dbConnection);
+        $roleController = new RoleController($miembrosService);
+        $data = $_POST;
+        if (empty($data)){
+            $data = (array) json_decode(file_get_contents("PHP://input"), true);
+        }
+        try {
+            $response = $roleController->handleRequest($_SERVER, $id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
+    
+    case "actualizarEstadoMembresia":
+        $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
+        $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+        
+        $data = $_POST;
+        if (empty($data)) {
+            $data = (array) json_decode(file_get_contents("php://input"), true);
+        }
+        
+        try {
+            $response = $membresiaUsuarioController->actualizarEstadoMembresia($id, $data);
+            echo json_encode($response);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["success" => false, "message" => $e->getMessage()]);
+        }
+        break;
+
+    case "uploadFile":
+        $fileUploadService = new FileUploadService();
+        $fileUploadController = new FileUploadController($fileUploadService);
+        $fileUploadController->processRequest();
+        break;
+
     default:
         http_response_code(404);
         echo json_encode(["message" => "Endpoint no encontrado"]);
         break;
 }
+

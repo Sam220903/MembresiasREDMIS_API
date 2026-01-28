@@ -34,7 +34,7 @@ class MembershipRequestController {
     public function acceptMembershipRequest($id) {
         $userPayload = $this->getUserFromToken();
 
-        if ($userPayload["role"] !== 1) {
+        if ($userPayload["role"] != 1) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
@@ -42,15 +42,16 @@ class MembershipRequestController {
 
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
+            $result = TypeCaster::castRow($result);
 
-            /* Temporarily disabled email sending for debugging
+            
             $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf');
 
             $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], [
                 'path' => $pdfPath,
                 'fileName' => 'Membresia.pdf'
             ]);
-            */
+            
 
             http_response_code(200);
             echo json_encode(["status" => "success", "message" => "Solicitud aprobada y correo enviado", "data" => $result]);
@@ -63,7 +64,7 @@ class MembershipRequestController {
     public function rejectMembershipRequest($id) {
         $userPayload = $this->getUserFromToken();
 
-        if ($userPayload["role"] !== 1) {
+        if ($userPayload["role"] != 1) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Acceso denegado. Se requieren permisos de administrador."]);
             exit;
@@ -78,12 +79,11 @@ class MembershipRequestController {
 
         try {
             $result = $this->membershipService->updateRequestStatus($id, 'RECHAZADA', $data['reason']);
+            $result = TypeCaster::castRow($result);
 
-            // Temporarily disabled email sending for debugging
-            /*
+           
             $this->mailerService->sendMembershipRejection($result['email'], $result['nombre'], $data['reason']);
-            */
-
+           
 
             http_response_code(200);
             echo json_encode(["status" => "success", "message" => "Solicitud rechazada y correo enviado"]);

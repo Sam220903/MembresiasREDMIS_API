@@ -1,6 +1,9 @@
 <?php
 class StatisticsController{
-    public function __construct(private readonly StatisticsService $service){
+    private $service;
+    
+    public function __construct(StatisticsService $service){
+        $this->service = $service;
         // Agregar el payload cuando esa parte este terminada
     }
     // Procesar las solicitudes según su tipo (recurso o colección)
@@ -22,6 +25,7 @@ class StatisticsController{
         switch ($method) {
             case 'GET':
                 $statistics = $this->service->getStatistics();
+                $statistics = TypeCaster::castRows($statistics);
                 echo json_encode($statistics);
                 break;
             

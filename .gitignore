@@ -1,2 +1,12 @@
 .vscode
 .idea
+*.zip
+.qodo
+
+
+# Ignorar todos los PDFs dentro de pdfs/cvs/
+backend/src/pdfs/cvs/*.pdf
+
+# Pero no ignorar los que siguen el patrón cv[0-9].pdf (cv1.pdf, cv2.pdf, etc.)
+!backend/src/pdfs/cvs/cv[0-9].pdf
+

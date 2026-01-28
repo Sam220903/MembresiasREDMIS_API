@@ -3,110 +3,112 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 
-require "../src/PHPMailer/PHPMailer.php";
-require "../src/PHPMailer/Exception.php";
-require "../src/PHPMailer/SMTP.php";
-
+require __DIR__ . '/../PHPMailer/PHPMailer.php';
+require __DIR__ . '/../PHPMailer/Exception.php';
+require __DIR__ . '/../PHPMailer/SMTP.php';
 class MailerService {
     private $mail;
-    private $adminEmail;
-    private $fromEmail;
-    private $fromName;
-    private $rootPath;
+    private $fromEmail = 'membresias-noreplay@lumacad.com.mx';
+    private $fromName = 'Membresias Redmis';
+    private $rootPath = __DIR__ . '/../../public/';
 
     public function __construct() {
-        // Cargar variables de entorno desde un archivo .env si es necesario
-        $this->loadEnvVariables();
-        
-        // Configurar valores desde variables de entorno
-        $this->adminEmail = getenv('ADMIN_EMAIL') ?: 'admin@lumacad.com.mx';
-        $this->fromEmail = getenv('FROM_EMAIL') ?: 'membresias-noreplay@lumacad.com.mx';
-        $this->fromName = getenv('FROM_NAME') ?: 'Membresias Redmis';
-        $this->rootPath = getenv('ROOT_PATH') ?: __DIR__ . '/../../public/index.env';
-        
         $this->mail = new PHPMailer(true);
         try {
-            // Configuración SMTP
+            // Configuración SMTP directa
             $this->mail->isSMTP();
-            $this->mail->Host       = getenv('SMTP_HOST') ?: 'mail.lumacad.com.mx';
+            $this->mail->Host       = 'mail.lumacad.com.mx';
             $this->mail->SMTPAuth   = true;
             $this->mail->Username   = $this->fromEmail;
-            $this->mail->Password   = getenv('SMTP_PASSWORD'); // Usando variable de entorno
+            $this->mail->Password   = ',9q=29TIL=xO';
             $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $this->mail->Port       = getenv('SMTP_PORT') ?: 587;
-            $this->mail->setFrom($this->fromEmail, $this->fromName);
+            $this->mail->Port       = 587;
+            
+            // Configuración UTF-8
+            $this->mail->CharSet = 'UTF-8';  // Establece el charset a UTF-8
+            $this->mail->Encoding = 'base64'; // Codificación para el contenido
+            
+            $this->mail->setFrom($this->fromEmail, $this->fromName, 'UTF-8');
         } catch (Exception $e) {
             error_log("Error en la configuración de PHPMailer: " . $e->getMessage());
         }
     }
-    
-    /**
-     * Método para cargar variables de entorno desde un archivo .env
-     * Si estás usando un framework como Laravel, esto no es necesario
-     */
-    private function loadEnvVariables() {
-        $envFile = __DIR__ . '/../../public/index.env';
-        if (file_exists($envFile)) {
-            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
-                    list($key, $value) = explode('=', $line, 2);
-                    $key = trim($key);
-                    $value = trim($value);
-                    putenv("$key=$value");
-                }
-            }
-        }
-    }
 
     // 📩 Notifica al administrador sobre una nueva solicitud de membresía
-    public function notifyAdmin($userName, $userEmail) {
+    public function notifyAdmin($adminEmail, $userName, $userEmail, $membershipType) {
         try {
             $this->mail->clearAddresses();
-            $this->mail->addAddress($this->adminEmail);
+            $this->mail->addAddress($adminEmail);
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Nueva Solicitud de Membresía";
-            $this->mail->Body    = "<p>El usuario <strong>$userName</strong> ($userEmail) ha solicitado una membresía.</p>";
-
-            $this->mail->send();
-            return true;
+            $this->mail->Subject = "Nueva Solicitud de Membresía - " . $membershipType;
+            
+            // Asegurar que el contenido HTML tenga la declaración de charset
+            $htmlContent = '
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                </head>
+                <body>
+                    <h2>Nueva solicitud de membresía recibida</h2>
+                    <p><strong>Usuario:</strong> '.htmlspecialchars($userName, ENT_QUOTES, 'UTF-8').'</p>
+                    <p><strong>Email:</strong> '.htmlspecialchars($userEmail, ENT_QUOTES, 'UTF-8').'</p>
+                    <p><strong>Tipo de membresía solicitada:</strong> '.htmlspecialchars($membershipType, ENT_QUOTES, 'UTF-8').'</p>
+                    <p>Por favor revisa el sistema para aprobar o rechazar esta solicitud.</p>
+                </body>
+                </html>
+            ';
+            
+            $this->mail->Body = $htmlContent;
+            $this->mail->AltBody = strip_tags($htmlContent); // Versión de texto plano
+            
+            return $this->mail->send();
         } catch (Exception $e) {
-            error_log("Error al enviar notificación al administrador: " . $this->mail->ErrorInfo);
+            error_log("Error al enviar notificación al admin: " . $e->getMessage());
             return false;
         }
     }
-
     // 📩 Envía confirmación al usuario con su membresía en PDF
     public function sendMembershipApproval($userEmail, $userName, $pdfInfo) {
         try {
             $this->mail->clearAddresses();
             $this->mail->addAddress($userEmail);
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Membresía Aceptada";
-            $this->mail->Body    = "<p>Hola <strong>$userName</strong>, tu solicitud de membresía ha sido aceptada. 
-                                    En adjunto encontrarás el archivo pdf de tu membresía.</p>";
-
-            // Verificar si tenemos información del PDF
+            $this->mail->Subject = htmlspecialchars("Membresía Aceptada", ENT_QUOTES, 'UTF-8');
+            
+            $htmlContent = '
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                </head>
+                <body>
+                    <p>Hola <strong>'.htmlspecialchars($userName, ENT_QUOTES, 'UTF-8').'</strong>, tu solicitud de membresía ha sido aceptada. 
+                    En adjunto encontrarás el archivo PDF de tu membresía.</p>
+                </body>
+                </html>
+            ';
+    
+            $this->mail->Body = $htmlContent;
+            $this->mail->AltBody = "Hola $userName, tu solicitud de membresía ha sido aceptada. En adjunto encontrarás el archivo PDF de tu membresía.";
+    
             if (!isset($pdfInfo['path'])) {
                 error_log("Error: No se proporcionó la ruta del PDF");
                 return false;
             }
             
-            // Construir la ruta absoluta correcta al PDF
             $pdfPath = $this->normalizePdfPath($pdfInfo['path']);
             
-            // Verificar si el archivo existe y es legible
             if (file_exists($pdfPath) && is_readable($pdfPath)) {
                 $fileName = isset($pdfInfo['fileName']) ? $pdfInfo['fileName'] : basename($pdfPath);
-                $this->mail->addAttachment($pdfPath, $fileName);
+                $this->mail->addAttachment($pdfPath, $fileName, 'base64', 'application/pdf');
             } else {
                 error_log("El archivo PDF no se encontró o no es legible: " . $pdfPath);
-                // Enviar el correo sin adjunto, pero con un mensaje adicional
-                $this->mail->Body .= "<p><strong>Nota:</strong> Hubo un problema al adjuntar tu membresía. Por favor, contacta con soporte.</p>";
+                $this->mail->Body .= '<p><strong>Nota:</strong> Hubo un problema al adjuntar tu membresía. Por favor, contacta con soporte.</p>';
+                $this->mail->AltBody .= "\n\nNota: Hubo un problema al adjuntar tu membresía. Por favor, contacta con soporte.";
             }
                             
-            $this->mail->send();
-            return true;
+            return $this->mail->send();
         } catch (Exception $e) {
             error_log("Error al enviar confirmación de membresía: " . $this->mail->ErrorInfo);
             return false;
@@ -119,35 +121,76 @@ class MailerService {
             $this->mail->clearAddresses();
             $this->mail->addAddress($userEmail);
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Membresía Rechazada";
-            $this->mail->Body    = "<p>Hola <strong>$userName</strong>, lamentamos informarte que tu solicitud de membresía ha sido rechazada.</p>
-                                    <p><strong>Razón:</strong> $reason</p>
-                                    <p>Si tienes dudas, puedes comunicarte con nosotros.</p>";
-
-            $this->mail->send();
-            return true;
+            $this->mail->Subject = htmlspecialchars("Membresía Rechazada", ENT_QUOTES, 'UTF-8');
+            
+            $htmlContent = '
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                </head>
+                <body>
+                    <p>Hola <strong>'.htmlspecialchars($userName, ENT_QUOTES, 'UTF-8').'</strong>, lamentamos informarte que tu solicitud de membresía ha sido rechazada.</p>
+                    <p><strong>Razón:</strong> '.htmlspecialchars($reason, ENT_QUOTES, 'UTF-8').'</p>
+                    <p>Si tienes dudas, puedes comunicarte con nosotros.</p>
+                </body>
+                </html>
+            ';
+    
+            $this->mail->Body = $htmlContent;
+            $this->mail->AltBody = "Hola $userName,\n\nLamentamos informarte que tu solicitud de membresía ha sido rechazada.\n\nRazón: $reason\n\nSi tienes dudas, puedes comunicarte con nosotros.";
+    
+            return $this->mail->send();
         } catch (Exception $e) {
             error_log("Error al enviar notificación de rechazo: " . $this->mail->ErrorInfo);
+            return false;
+        }
+    }
+    public function enviarCodigoVerificacion(string $email, string $nombre, string $codigo): bool {
+        try {
+            $this->mail->clearAddresses();
+            $this->mail->addAddress($email);
+            $this->mail->isHTML(true);
+            $this->mail->Subject = htmlspecialchars("Tu código de verificación - Redmis", ENT_QUOTES, 'UTF-8');
+            
+            $htmlContent = '
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                </head>
+                <body>
+                    <h2>¡Bienvenido/a '.htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8').'!</h2>
+                    <p>Gracias por registrarte en nuestra plataforma. Para completar tu registro, por favor utiliza el siguiente código de verificación:</p>
+                    <div style="font-size: 24px; font-weight: bold; margin: 20px 0;">'.htmlspecialchars($codigo, ENT_QUOTES, 'UTF-8').'</div>
+                    <p>Este código es válido por 24 horas.</p>
+                    <p>Si no solicitaste este registro, por favor ignora este mensaje.</p>
+                </body>
+                </html>
+            ';
+            
+            $this->mail->Body = $htmlContent;
+            $this->mail->AltBody = "Tu código de verificación es: $codigo";
+            
+            return $this->mail->send();
+        } catch (Exception $e) {
+            error_log("Error al enviar código de verificación: " . $e->getMessage());
             return false;
         }
     }
     
     /**
      * Normaliza la ruta del PDF para asegurar que es accesible
-     * 
      */
     public function normalizePdfPath($path) {
-        // Si es una ruta absoluta, devuélvela tal cual
         if (file_exists($path)) {
             return $path;
         }
         
-        // Si la ruta empieza con ../pdfs/ (como en MembresiaPDFController)
         if (strpos($path, '../pdfs/') === 0) {
             return $this->rootPath . substr($path, 3); 
         }
         
-        // Si parece una ruta relativa sin '../'
         if (strpos($path, '/') !== 0) {
             return $this->rootPath . $path;
         }
