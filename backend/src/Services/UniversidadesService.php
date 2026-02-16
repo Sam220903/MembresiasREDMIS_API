@@ -14,10 +14,11 @@ class UniversidadesService{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function createUniversidad($nombre) {
-        $sql = "INSERT INTO MR_Universidades (nombre) VALUES (:nombre)";
+    public function createUniversidad($data) {
+        $sql = "INSERT INTO MR_Universidades (nombre, MR_Paises_id) VALUES (:nombre, :pais_id)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':nombre', $nombre);
+        $stmt->bindParam(':nombre', $data['nombre']);
+        $stmt->bindParam(':pais_id', $data['pais_id']);
         return $stmt->execute();
     }
 }

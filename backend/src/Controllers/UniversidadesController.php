@@ -14,7 +14,7 @@ class UniversidadesController{
                 $this->listOfUniversidades();
                 break;
             case 'POST':
-                $this->createUniversidad($data['nombre']);
+                $this->createUniversidad($data);
                 break;
             default:
                 header('HTTP/1.1 405 Method Not Allowed');
@@ -39,8 +39,8 @@ class UniversidadesController{
         echo json_encode($resultado);
     }
 
-    private function createUniversidad($nombre){
-        $universidad = $this->service->createUniversidad($nombre);
+    private function createUniversidad($data){
+        $universidad = $this->service->createUniversidad($data);
         if ($universidad) {
             header('Content-Type: application/json');
             echo json_encode(['message' => 'Universidad creada correctamente']);

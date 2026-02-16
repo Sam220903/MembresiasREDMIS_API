@@ -14,7 +14,7 @@ class EstadosController{
                 $this->listOfEstados();
                 break;
             case 'POST':
-                $this->createEstado($data['nombre']);
+                $this->createEstado($data);
                 break;
             default:
                 header('HTTP/1.1 405 Method Not Allowed');
@@ -29,14 +29,14 @@ class EstadosController{
         echo json_encode($estados);
     }
 
-    public function createEstado($nombre){
-        $estado = $this->service->createEstado($nombre);
+    public function createEstado($data){
+        $estado = $this->service->createEstado($data);
         if ($estado) {
             header('Content-Type: application/json');
-            echo json_encode(['message' => 'Estado creado correctamente']);
+            echo json_encode(['message' => 'Estado agregado correctamente']);
         } else {
             header('HTTP/1.1 500 Internal Server Error');
-            echo json_encode(['message' => 'Error al crear el estado']);
+            echo json_encode(['message' => 'Error al agregar el estado']);
         }
     }
 }
