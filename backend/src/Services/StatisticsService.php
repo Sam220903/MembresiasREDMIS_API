@@ -34,7 +34,14 @@ class StatisticsService{
                 GROUP BY s.estado;";
 
         $result = $this->conn->query($sql);
-        return $result->fetchAll(PDO::FETCH_ASSOC);
+
+        $response = array();
+
+        foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $response[$row['membership_status']] = $row['total_applications'];
+        }
+
+        return $response;
     }
 
     private function getMembershipsPerStatus(){
@@ -45,12 +52,18 @@ class StatisticsService{
                 GROUP BY e.estado;";
 
         $result = $this->conn->query($sql);
-        return $result->fetchAll(PDO::FETCH_ASSOC);
+
+        $response = array();
+        foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $response[$row['membership_status']] = $row['total_memberships'];
+        }
+        
+        return $response;
     }
 
     private function getMembersPerCountry() {
         // Tercer consulta: Conteo de miembros (activos) por país
-        $sql = "SELECT  p.nombre AS pais, COUNT(*) AS total_members
+        $sql = "SELECT p.nombre AS pais, COUNT(*) AS total_members
                 FROM MR_Miembros m1 JOIN MR_MiembrosMembresias mm ON (m1.id = mm.MR_Miembros_id) 
                 JOIN MR_Membresias m2 ON (m2.id = mm.MR_Membresias_id) 
                 JOIN MR_Paises p ON (m1.MR_Paises_id = p.id)
@@ -58,12 +71,19 @@ class StatisticsService{
                 GROUP BY p.nombre;";
 
         $result = $this->conn->query($sql);
-        return $result->fetchAll(PDO::FETCH_ASSOC);
+
+        $response = array();
+
+        foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $response[$row['pais']] = $row['total_members'];
+        }
+
+        return $response;
     }
 
     private function getMembersPerUniversity() {
         // Cuarta consulta: Conteo de miembros (activos) por universidad
-        $sql = "SELECT  u.nombre AS universidad, COUNT(*) AS total_members
+        $sql = "SELECT u.nombre AS universidad, COUNT(*) AS total_members
                 FROM MR_Miembros m1 JOIN MR_MiembrosMembresias mm ON (m1.id = mm.MR_Miembros_id) 
                 JOIN MR_Membresias m2 ON (m2.id = mm.MR_Membresias_id) 
                 JOIN MR_Universidades u ON (m1.MR_Universidades_id = u.id)
@@ -71,22 +91,22 @@ class StatisticsService{
                 GROUP BY u.nombre;";
 
         $result = $this->conn->query($sql);
-        return $result->fetchAll(PDO::FETCH_ASSOC);
+
+        $response = array();
+
+        foreach ($result->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $response[$row['universidad']] = $row['total_members'];
+        }
+        return $response;
     }
 
     // Nueva función para retorno de estadísticas
     public function getStatistics(){
-        
-        $applications = $this->getApplicationsPerStatus();
-        $memberships = $this->getMembershipsPerStatus();
-        $membersPerCountry = $this->getMembersPerCountry();
-        $membersPerUniversity = $this->getMembersPerUniversity();
-
         return array ( 
-            "applications" => $applications,
-            "memberships" => $memberships,
-            "members_per_country" => $membersPerCountry,
-            "members_per_university" => $membersPerUniversity
+            "applications" => $this->getApplicationsPerStatus(),
+            "memberships" => $this->getMembershipsPerStatus(),
+            "members_per_country" => $this->getMembersPerCountry(),
+            "members_per_university" => $this->getMembersPerUniversity()
         );   
     }
 
