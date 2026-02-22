@@ -276,11 +276,11 @@ INSERT INTO MR_Miembros (nombre, apellidos, genero, codigo, verificado, activo, 
 
 -- Datos para MR_Login
 INSERT INTO MR_Login (MR_Miembros_id, email, password_hash, activo) VALUES
-    (1, 'admin@example.com', '21232f297a57a5a743894a0e4a801fc3', true),    -- password: "admin"
-    (2, 'usuario1@example.com', 'ee11cbb19052e40b07aac0ca060c23ee', true), -- password: "user"
-    (3, 'usuario2@example.com', '5f4dcc3b5aa765d61d8327deb882cf99', true), -- password: "password"
-    (4, 'usuario3@example.com', '827ccb0eea8a706c4c34a16891f84e7b', true), -- password: "12345"
-    (5, 'usuario4@example.com', 'e10adc3949ba59abbe56e057f20f883e', true); -- password: "123456"
+    (1, 'admin@example.com', '$2y$10$nhScNtJzPPE7wn3sacUjcOwPUvSITpQuHwoWrC.GNldBXrygofm6W', true),    -- password: "admin"
+    (2, 'usuario1@example.com', '$2y$10$PGS3W57IQZKcVj3DnnDsGe8ncfSJW88Y9064OeU7lFMp/PwL5zg3i', true), -- password: "user"
+    (3, 'usuario2@example.com', '$2y$10$59ws4xggU2TtOuPEA92tZ.w.Lau1OWUt1sD98wv/I0hiA2CLLhCjK', true), -- password: "password"
+    (4, 'usuario3@example.com', '$2y$10$BaANspvui5jBCsC7QqX4hOTOPA9sN0g2TzpMCeVWBJa9LXrE3uuVG', true), -- password: "12345"
+    (5, 'usuario4@example.com', '$2y$10$8tkrMOem8qNymIjuQajAVeFftpdrG21fJW.9MdU1VSP.BL2C3irMi', true); -- password: "123456"
 
 -- Datos para MR_ArchivosMiembros
 INSERT INTO MR_ArchivosMiembros (images, cv, credencial, MR_Miembros_id) VALUES

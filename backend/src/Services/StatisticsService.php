@@ -88,7 +88,8 @@ class StatisticsService{
                 JOIN MR_Membresias m2 ON (m2.id = mm.MR_Membresias_id) 
                 JOIN MR_Universidades u ON (m1.MR_Universidades_id = u.id)
                 WHERE mm.estado = 'ACTIVA'
-                GROUP BY u.nombre;";
+                GROUP BY u.nombre
+                ORDER BY total_members DESC;";
 
         $result = $this->conn->query($sql);
 

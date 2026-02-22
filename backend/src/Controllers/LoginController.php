@@ -40,13 +40,14 @@ class LoginController
         echo json_encode(['error'=>$errors]);
         return;
     }
+    
 
     $user = $this->user_service->findByEmail($data['email']);
     if (!$user) {
-        http_response_code(404);
+        http_response_code(401);
         echo json_encode(['error'=>'Email not found']);
         return;
-    } else if (md5($data['password']) !== $user['password_hash']) {
+    } else if (!password_verify($data['password'], $user['password_hash'])) {
         http_response_code(401);
         echo json_encode(['error'=>'Wrong Password']);
         return;

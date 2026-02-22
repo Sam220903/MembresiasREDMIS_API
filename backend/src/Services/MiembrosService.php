@@ -49,11 +49,14 @@ class MiembrosService{
     
 
     public function postLogin($miembroId,$data){
+        // Cifrado en el backend y con bcrypt
+        $hash = password_hash($data["password"], PASSWORD_BCRYPT);
+
         $query="INSERT INTO MR_Login (MR_Miembros_id,email,password_hash) VALUES (:MR_Miembros_id,:email,:password_hash) ";
         $stmt=$this->connection->prepare($query);
         $stmt->bindValue(":MR_Miembros_id",$miembroId);
         $stmt->bindValue(":email",$data["email"]);
-        $stmt->bindValue(":password_hash",$data["password"]);
+        $stmt->bindValue(":password_hash",$hash);
 
         $stmt->execute(); 
     }
@@ -90,11 +93,13 @@ class MiembrosService{
         
         // Update email and/or password if either is provided
         if(isset($new["email"]) && isset($new["password"])) {
-            $this->updateLogin($id, $new["email"], $new["password"]);
+            $hash = password_hash($new["password"], PASSWORD_BCRYPT);
+            $this->updateLogin($id, $new["email"], $hash);
         } else if(isset($new["email"])) {
             $this->updateEmail($id, $new["email"]);
         } else if(isset($new["password"])) {
-            $this->updatePassword($id, $new["password"]);
+            $hash = password_hash($new["password"], PASSWORD_BCRYPT);
+            $this->updatePassword($id, $hash);
         }
 
         $stmt->execute();
