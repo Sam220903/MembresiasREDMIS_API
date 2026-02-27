@@ -240,6 +240,11 @@ switch ($route){
         if (empty($data)){
             $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
+
+        if (empty($data)){
+            $data = $_GET; 
+        }
+
         try {
             $estadosController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
         } catch (\Throwable $th) {

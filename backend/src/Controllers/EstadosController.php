@@ -6,11 +6,15 @@ class EstadosController{
         $this->service = $service;
         // Agregar el payload cuando esa parte este terminada
     }
-    
+
     public function handleRequest($method, $data)
     {
         switch ($method) {
             case 'GET':
+                if (isset($data['country_id'])) {
+                    $this->statesPerCountry($data['country_id']);
+                    break;
+                }
                 $this->listOfEstados();
                 break;
             case 'POST':
@@ -27,6 +31,13 @@ class EstadosController{
         $estados = TypeCaster::castRows($estados);
         header('Content-Type: application/json');
         echo json_encode($estados);
+    }
+
+    public function statesPerCountry($countryID) {
+        $states = $this->service->getStatesPerCountry($countryID);
+        $states = TypeCaster::castRows($states);
+        header('Content-Type: application/json');
+        echo json_encode($states);
     }
 
     public function createEstado($data){

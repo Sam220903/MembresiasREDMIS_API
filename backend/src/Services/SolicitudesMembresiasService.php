@@ -44,10 +44,14 @@ class SolicitudesMembresiasService {
     public function getSolicitudporID($id) {
         $query = "SELECT s.id, CONCAT(u.nombre, ' ', u.apellidos) AS nombre, l.email, 
                         m.nombre AS membresia, s.estado, s.fecha_solicitud, 
-                        s.comentarios, a.cv
+                        s.comentarios, p.nombre AS pais, e.nombre AS entidad, 
+                        un.nombre AS universidad, a.cv
                     FROM MR_SolicitudesMembresia s
                     LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
                     LEFT JOIN MR_Miembros u ON s.MR_Miembros_id = u.id
+                    LEFT JOIN MR_Paises p ON u.MR_Paises_id = p.id
+                    LEFT JOIN MR_Estados e ON u.MR_Estados_id = e.id
+                    LEFT JOIN MR_Universidades un on u.MR_Universidades_id = un.id
                     LEFT JOIN MR_Login l ON u.id = l.MR_Miembros_id
                     LEFT JOIN MR_ArchivosMiembros a 
                         ON s.MR_Miembros_id = a.MR_Miembros_id
@@ -69,6 +73,9 @@ class SolicitudesMembresiasService {
             'membresia' => $result['membresia'],
             'estado' => $result['estado'],
             'fecha_solicitud' => $result['fecha_solicitud'],
+            'pais' => $result['pais'],
+            'entidad' => $result['entidad'],
+            'universidad' => $result['universidad'],
             'comentarios' => $result['comentarios'],
             'cv' => $result['cv']
         ];
