@@ -89,6 +89,10 @@ switch ($route){
         $controller->processRequest($_SERVER["REQUEST_METHOD"]);
         break;
 
+    case 'investigationLine':
+        echo json_encode(["php_version" => phpversion()]);
+        break;
+
     //Ruta para solicitar membresias
     case "solicitarMembresia":
         $service = new MembershipApplicationService($dbConnection);
@@ -233,9 +237,9 @@ switch ($route){
             echo json_encode(['error'=> $th->getMessage()]);
         }
         break;
-    case "estados":
-        $estadosService = new EstadosService($dbConnection);
-        $estadosController = new EstadosController($estadosService);
+    case "states":
+        $statesService = new StatesService($dbConnection);
+        $statesController = new StatesController($statesService);
         $data = $_POST;
         if (empty($data)){
             $data = (array) json_decode(file_get_contents("PHP://input"), true);
@@ -246,7 +250,7 @@ switch ($route){
         }
 
         try {
-            $estadosController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+            $statesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
         } catch (\Throwable $th) {
             http_response_code(400);
             echo json_encode(['error'=> $th->getMessage()]);
