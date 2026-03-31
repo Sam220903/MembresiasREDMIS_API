@@ -138,8 +138,6 @@ create table MR_MiembrosInvestigaciones
         primary key,
     MR_Miembros_id             int  not null,
     MR_LineaInvestigaciones_id int  not null,
-    fecha_inicio               date not null,
-    fecha_fin                  date null,
     constraint MR_MiembrosInvestigaciones_MR_LineaInvestigaciones_FK
         foreign key (MR_LineaInvestigaciones_id) references MR_LineaInvestigaciones (id),
     constraint MR_MiembrosInvestigaciones_MR_Miembros_FK

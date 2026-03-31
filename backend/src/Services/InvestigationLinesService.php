@@ -27,4 +27,39 @@ class InvestigationLinesService {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function createLine(InvestigationLine $line) : bool {
+        $sql = "INSERT INTO MR_LineasInvestigaciones (nombre) VALUES (:nombre)";
+        $stmt = $this->conn->prepare($sql);
+
+        $name = $line->getName();
+
+        $stmt->bindParam(':nombre', $name);
+
+        return $stmt->execute();
+    }
+
+    public function assignLineToMember($lineId, $memberId, $startDate){
+        $sql = "INSERT INTO MR_MiembrosInvestigaciones (MR_Miembros_id, MR_LineaInvestigaciones_id, fecha_inicio
+                VALUES (:miembro_id, linea_id, fecha_inicio))";
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bindParam(':miembro_id', $memberId);
+        $stmt->bindParam(':linea_id', $lineId);
+        $stmt->bindParam(':fecha_inicio', $startDate);
+
+        return $stmt->execute();
+    }
+
+    public function deleteLineToMember($lineId, $memberId){
+        $sql = "DELETE FROM MR_MiembrosInvestigaciones 
+                WHERE MR_Miembros_id = :miembro_id 
+                AND MR_LineaInvestigaciones_id = :linea_id";
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bindParam(':miembro_id', $memberId);
+        $stmt->bindParam(':linea_id', $lineId);
+
+        return $stmt->execute();
+    }
 }
