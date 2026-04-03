@@ -3,13 +3,13 @@ services:
     image: mysql
     volumes:
       - db_data:/var/lib/mysql
-      - ./db/MR_DB_V5.sql:/docker-entrypoint-initdb.d/MR_DB_V5.sql
+      - ./db/MR_DB_V7.sql:/docker-entrypoint-initdb.d/MR_DB_V7.sql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: REDMIS
       MYSQL_DATABASE: mr_db
       MYSQL_USER: mr_user
-      MYSQL_PASSWORD: REDMIS
+      MYSQL_PASSWORD: "#Redmis1"
     ports:
       - "3306:3306"
 volumes:
