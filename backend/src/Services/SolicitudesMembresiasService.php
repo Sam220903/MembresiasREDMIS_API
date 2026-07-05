@@ -42,10 +42,10 @@ class SolicitudesMembresiasService {
     }
 
     public function getSolicitudporID($id) {
-        $query = "SELECT s.id, CONCAT(u.nombre, ' ', u.apellidos) AS nombre, l.email, 
-                        m.nombre AS membresia, s.estado, s.fecha_solicitud, 
-                        s.comentarios, p.nombre AS pais, e.nombre AS entidad, 
-                        un.nombre AS universidad, a.cv
+        $query = "SELECT s.id, CONCAT(u.nombre, ' ', u.apellidos) AS nombre, l.email,
+                        m.nombre AS membresia, s.estado, s.fecha_solicitud,
+                        s.comentarios, p.nombre AS pais, e.nombre AS entidad,
+                        un.nombre AS universidad, a.cv, i.nombre AS linea_investigacion
                     FROM MR_SolicitudesMembresia s
                     LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
                     LEFT JOIN MR_Miembros u ON s.MR_Miembros_id = u.id
@@ -53,11 +53,13 @@ class SolicitudesMembresiasService {
                     LEFT JOIN MR_Estados e ON u.MR_Estados_id = e.id
                     LEFT JOIN MR_Universidades un on u.MR_Universidades_id = un.id
                     LEFT JOIN MR_Login l ON u.id = l.MR_Miembros_id
-                    LEFT JOIN MR_ArchivosMiembros a 
+                    LEFT JOIN MR_MiembrosInvestigaciones mi ON mi.MR_Miembros_id = u.id
+                    LEFT JOIN MR_LineaInvestigaciones i ON i.id = mi.MR_LineaInvestigaciones_id
+                    LEFT JOIN MR_ArchivosMiembros a
                         ON s.MR_Miembros_id = a.MR_Miembros_id
                         AND (a.fecha_subida = (
-                            SELECT MAX(a1.fecha_subida) 
-                            FROM MR_ArchivosMiembros a1 
+                            SELECT MAX(a1.fecha_subida)
+                            FROM MR_ArchivosMiembros a1
                             WHERE a1.MR_Miembros_id = s.MR_Miembros_id)
                         OR ABS(TIMESTAMPDIFF(MINUTE, a.fecha_subida, s.fecha_solicitud)) <= 10)
                     WHERE s.id = :id;";
@@ -77,6 +79,7 @@ class SolicitudesMembresiasService {
             'entidad' => $result['entidad'],
             'universidad' => $result['universidad'],
             'comentarios' => $result['comentarios'],
+            'linea_investigacion' => $result['linea_investigacion'],
             'cv' => $result['cv']
         ];
 

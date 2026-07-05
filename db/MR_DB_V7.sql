@@ -289,12 +289,12 @@ INSERT INTO MR_ArchivosMiembros (images, cv, credencial, MR_Miembros_id) VALUES
     ('perfil5.jpg', 'cv5.pdf', 'cred5.pdf', 5);
 
 -- Datos para MR_MiembrosInvestigaciones
-INSERT INTO MR_MiembrosInvestigaciones (MR_Miembros_id, MR_LineaInvestigaciones_id, fecha_inicio, fecha_fin) VALUES
-    (1, 1, '2024-01-01', NULL),
-    (2, 2, '2024-01-01', NULL),
-    (3, 3, '2024-01-01', NULL),
-    (4, 4, '2024-01-01', NULL),
-    (5, 5, '2024-01-01', NULL);
+INSERT INTO MR_MiembrosInvestigaciones (MR_Miembros_id, MR_LineaInvestigaciones_id) VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5);
 
 -- Datos para MR_MiembrosMembresias
 INSERT INTO MR_MiembrosMembresias (MR_Miembros_id, MR_Membresias_id, fecha_inicio, fecha_fin, estado) VALUES

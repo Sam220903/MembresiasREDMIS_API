@@ -12,7 +12,7 @@ services:
       MYSQL_PASSWORD: "#Redmis1"
       MYSQL_CHARSET: utf8mb4
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - app_network
     container_name: redmis_db
@@ -34,7 +34,7 @@ services:
     environment:
       - DB_HOST=redmis_db
       - DB_USER=mr_user
-      - DB_PASSWORD=REDMIS
+      - DB_PASSWORD="#Redmis1"
       - DB_NAME=mr_db
 
 volumes:

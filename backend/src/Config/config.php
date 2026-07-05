@@ -2,8 +2,8 @@
 // Configuración de la base de datos usando variables de entorno
 
 $connection = [
-//  "servername" => "localhost",
-    "servername" => "127.0.0.1",
+    // "servername" => "127.0.0.1",
+    "servername" => "redmis_db",
     "username" => "mr_user",
     "password" => "#Redmis1",
     "dbname" => "mr_db"

@@ -29,7 +29,7 @@ class StatesService{
         $states = [];
         
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-            $states[] = new State($row['id'], $row['nombre'], $row['pais_id']);
+            $states[] = new State($row['id'], $row['nombre'], (int)$row['pais_id']);
         }
         return $states;
     }

@@ -209,7 +209,7 @@ switch ($route){
         }
         break;
 
-    case "universidades":
+    case "universities":
         $universidadesService = new UniversidadesService($dbConnection);
         $universidadesController = new UniversidadesController($universidadesService);
         $data = $_POST;
@@ -223,7 +223,7 @@ switch ($route){
             echo json_encode(['error'=> $th->getMessage()]);
         }
         break;
-    case "paises":
+    case "countries":
         $paisesService = new PaisesService($dbConnection);
         $paisesController = new PaisesController($paisesService);
         $data = $_POST;
@@ -327,6 +327,32 @@ switch ($route){
         $fileUploadService = new FileUploadService();
         $fileUploadController = new FileUploadController($fileUploadService);
         $fileUploadController->processRequest();
+        break;
+
+    case 'investigationLines':
+        $service = new InvestigationLinesService($dbConnection);
+        $data = $_POST;
+        if (empty($data)) {
+            $data = (array) json_decode(file_get_contents("php://input"), true);
+        }
+        $controller = new InvestigationLinesController($service, $data);
+        try {
+            $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
+
+    case 'memberInvestigation':
+        $service = new MemberInvestigationService($dbConnection);
+        $controller = new MemberInvestigationController($service);
+        try {
+            $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
         break;
 
     default:
