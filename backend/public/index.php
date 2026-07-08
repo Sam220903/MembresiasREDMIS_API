@@ -210,28 +210,28 @@ switch ($route){
         break;
 
     case "universities":
-        $universidadesService = new UniversidadesService($dbConnection);
-        $universidadesController = new UniversidadesController($universidadesService);
+        $universityService = new UniversityService($dbConnection);
+        $universityController = new UniversityController($universityService);
         $data = $_POST;
         if (empty($data)){
             $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
         try {
-            $universidadesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+            $universityController->handleRequest($_SERVER['REQUEST_METHOD'], $data, $id);
         } catch (\Throwable $th) {
             http_response_code(400);
             echo json_encode(['error'=> $th->getMessage()]);
         }
         break;
     case "countries":
-        $paisesService = new PaisesService($dbConnection);
-        $paisesController = new PaisesController($paisesService);
+        $countryService = new CountryService($dbConnection);
+        $countryController = new CountryController($countryService);
         $data = $_POST;
         if (empty($data)){
             $data = (array) json_decode(file_get_contents("PHP://input"), true);
         }
         try {
-            $paisesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+            $countryController->handleRequest($_SERVER['REQUEST_METHOD'], $data, $id);
         } catch (\Throwable $th) {
             http_response_code(400);
             echo json_encode(['error'=> $th->getMessage()]);
@@ -250,7 +250,7 @@ switch ($route){
         }
 
         try {
-            $statesController->handleRequest($_SERVER['REQUEST_METHOD'], $data);
+            $statesController->handleRequest($_SERVER['REQUEST_METHOD'], $data, $id);
         } catch (\Throwable $th) {
             http_response_code(400);
             echo json_encode(['error'=> $th->getMessage()]);

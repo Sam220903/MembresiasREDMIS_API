@@ -1,5 +1,5 @@
 <?php 
-class State {
+class University {
     private ?int $id;
     private string $name;
     private int $countryId;
