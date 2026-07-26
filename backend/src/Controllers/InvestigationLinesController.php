@@ -15,8 +15,15 @@ class InvestigationLinesController {
         }
     }
 
+    // DELETE /investigationLine/{id} -> borrado lógico (activo = 0)
     public function processResourceRequest(string $method, string $id) {
         switch ($method) {
+            case 'DELETE':
+                $success = $this->investigationLinesService->deleteLine((int) $id);
+                http_response_code($success ? 200 : 500);
+                echo json_encode(['success' => $success]);
+                break;
+
             default:
                 http_response_code(405);
                 echo json_encode(['error' => 'Método no soportado para este recurso']);

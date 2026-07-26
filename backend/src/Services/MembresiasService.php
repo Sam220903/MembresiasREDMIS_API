@@ -45,13 +45,10 @@ class MembresiasService {
     }
 
     public function deleteMembresias($id) {
-        // $query = 'DELETE FROM MR_Membresias WHERE id = :id';
-        // $stmt = $this->connection->prepare($query);
-        // $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        // $stmt->execute();
         $query = "UPDATE MR_Membresias SET activo = 0 WHERE id = :id";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        if ($stmt->execute()) return $id;
+        else return false;
     }
 }
