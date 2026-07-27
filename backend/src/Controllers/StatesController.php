@@ -8,16 +8,18 @@ class StatesController{
     }
     public function handleRequest($method, $data, $id = null)
     {
+        if ($id) {
+            $this->processResourceRequest($method, $id, $data);
+        } else {
+            $this->processCollectionRequest($method, $data);
+        }
+    }
+
+    public function processResourceRequest($method, $id, $data)
+    {
         switch ($method) {
             case 'GET':
-                if (isset($data['country_id'])) {
-                    $this->getStatesPerCountry($data['country_id']);
-                    break;
-                }
-                $this->getAllStates();
-                break;
-            case 'POST':
-                $this->createState($data);
+                $this->getStatesOrFiltered($data);
                 break;
             case 'PUT':
                 $this->updateState($id, $data, true); // true = requiere actualización completa
@@ -30,6 +32,31 @@ class StatesController{
                 echo json_encode(['message' => 'Método no permitido']);
                 break;
         }
+    }
+
+    public function processCollectionRequest($method, $data)
+    {
+        switch ($method) {
+            case 'GET':
+                $this->getStatesOrFiltered($data);
+                break;
+            case 'POST':
+                $this->createState($data);
+                break;
+            default:
+                header('HTTP/1.1 405 Method Not Allowed');
+                echo json_encode(['message' => 'Método no permitido']);
+                break;
+        }
+    }
+
+    private function getStatesOrFiltered($data)
+    {
+        if (isset($data['country_id'])) {
+            $this->getStatesPerCountry($data['country_id']);
+            return;
+        }
+        $this->getAllStates();
     }
     public function getAllStates(){
         $states = $this->service->getAllStates();

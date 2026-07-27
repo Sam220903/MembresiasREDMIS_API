@@ -8,18 +8,40 @@ class UniversityController{
     }
     public function handleRequest($method, $data, $id = null)
     {
+        if ($id) {
+            $this->processResourceRequest($method, $id, $data);
+        } else {
+            $this->processCollectionRequest($method, $data);
+        }
+    }
+
+    public function processResourceRequest($method, $id, $data)
+    {
         switch ($method) {
             case 'GET':
                 $this->listUniversities();
-                break;
-            case 'POST':
-                $this->createUniversity($data);
                 break;
             case 'PUT':
                 $this->updateUniversity($id, $data, true); // true = requires full update
                 break;
             case 'PATCH':
                 $this->updateUniversity($id, $data, false); // false = partial update
+                break;
+            default:
+                header('HTTP/1.1 405 Method Not Allowed');
+                echo json_encode(['message' => 'Method not allowed']);
+                break;
+        }
+    }
+
+    public function processCollectionRequest($method, $data)
+    {
+        switch ($method) {
+            case 'GET':
+                $this->listUniversities();
+                break;
+            case 'POST':
+                $this->createUniversity($data);
                 break;
             default:
                 header('HTTP/1.1 405 Method Not Allowed');

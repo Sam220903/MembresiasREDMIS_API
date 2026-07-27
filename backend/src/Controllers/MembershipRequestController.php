@@ -32,6 +32,40 @@ class MembershipRequestController {
     }
 
     public function acceptMembershipRequest($id) {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'PATCH';
+
+        if ($id) {
+            $this->processAcceptResourceRequest($method, $id);
+        } else {
+            $this->processAcceptCollectionRequest($method);
+        }
+    }
+
+    // Aprobar una solicitud siempre actúa sobre un recurso existente (identificado por $id).
+    public function processAcceptResourceRequest($method, $id) {
+        switch ($method) {
+            case 'PATCH':
+            case 'POST':
+                $this->doAccept($id);
+                break;
+
+            default:
+                http_response_code(405);
+                echo json_encode(["status" => "error", "message" => "Método no soportado para este recurso"]);
+                break;
+        }
+    }
+
+    public function processAcceptCollectionRequest($method) {
+        switch ($method) {
+            default:
+                http_response_code(405);
+                echo json_encode(["status" => "error", "message" => "Método no soportado para esta colección"]);
+                break;
+        }
+    }
+
+    private function doAccept($id) {
         $userPayload = $this->getUserFromToken();
 
         if ($userPayload["role"] != 1) {
@@ -62,6 +96,40 @@ class MembershipRequestController {
     }
 
     public function rejectMembershipRequest($id) {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'PATCH';
+
+        if ($id) {
+            $this->processRejectResourceRequest($method, $id);
+        } else {
+            $this->processRejectCollectionRequest($method);
+        }
+    }
+
+    // Rechazar una solicitud siempre actúa sobre un recurso existente (identificado por $id).
+    public function processRejectResourceRequest($method, $id) {
+        switch ($method) {
+            case 'PATCH':
+            case 'POST':
+                $this->doReject($id);
+                break;
+
+            default:
+                http_response_code(405);
+                echo json_encode(["status" => "error", "message" => "Método no soportado para este recurso"]);
+                break;
+        }
+    }
+
+    public function processRejectCollectionRequest($method) {
+        switch ($method) {
+            default:
+                http_response_code(405);
+                echo json_encode(["status" => "error", "message" => "Método no soportado para esta colección"]);
+                break;
+        }
+    }
+
+    private function doReject($id) {
         $userPayload = $this->getUserFromToken();
 
         if ($userPayload["role"] != 1) {

@@ -9,18 +9,35 @@ class MiembrosService{
     public function postMiembro($data) {
         // Generar código de verificación
         $codigo = $this->generarCodigoVerificacion();
-        
+
+        // El registro público siempre crea miembros sin verificar y con el tipo de usuario 2 (miembro estándar)
+        $member = new Member(
+            null,
+            $data["nombre"],
+            $data["apellidos"],
+            $data["genero"],
+            $data["universidad"] ?? null,
+            $data["estado"] ?? null,
+            $data["paises"] ?? null,
+            null,
+            2,
+            $codigo,
+            false,
+            true
+        );
+
         $query = "INSERT INTO MR_Miembros (nombre, apellidos, genero, codigo, verificado, MR_Universidades_id, MR_Estados_id, MR_Paises_id, MR_TiposUsuario_id) 
-                  VALUES (:nombre, :apellidos, :genero, :codigo, 0, :MR_Universidades_id, :MR_Estados_id, :MR_Paises_id, 2)";
+                  VALUES (:nombre, :apellidos, :genero, :codigo, 0, :MR_Universidades_id, :MR_Estados_id, :MR_Paises_id, :MR_TiposUsuario_id)";
         
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":nombre", $data["nombre"]);
-        $stmt->bindValue(":apellidos", $data["apellidos"]);
-        $stmt->bindValue(":genero", $data["genero"]);
-        $stmt->bindValue(":codigo", $codigo);  // Usar el código generado
-        $stmt->bindValue(":MR_Universidades_id", $data["universidad"] ?? null);
-        $stmt->bindValue(":MR_Estados_id", $data["estado"] ?? null);
-        $stmt->bindValue(":MR_Paises_id", $data["paises"] ?? null);
+        $stmt->bindValue(":nombre", $member->getName());
+        $stmt->bindValue(":apellidos", $member->getLastName());
+        $stmt->bindValue(":genero", $member->getGender());
+        $stmt->bindValue(":codigo", $member->getCode());
+        $stmt->bindValue(":MR_Universidades_id", $member->getUniversityId());
+        $stmt->bindValue(":MR_Estados_id", $member->getStateId());
+        $stmt->bindValue(":MR_Paises_id", $member->getCountryId());
+        $stmt->bindValue(":MR_TiposUsuario_id", $member->getUserTypeId());
     
         $stmt->execute();
         $miembroId = $this->connection->lastInsertId();
@@ -78,17 +95,27 @@ class MiembrosService{
         $current = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$current) throw new Exception('Miembro no encontrado');
-        
+
+        $member = new Member(
+            (int)$current["id"],
+            $new["nombre"] ?? $current["nombre"],
+            $new["apellidos"] ?? $current["apellidos"],
+            $new["genero"] ?? $current["genero"],
+            $new["universidad"] ?? $current["universidad"],
+            $new["estado"] ?? $current["estado"],
+            $new["pais"] ?? $current["pais"]
+        );
+
         $query = "UPDATE MR_Miembros SET nombre=:newNombre, apellidos=:newApellido, genero=:newGenero, 
                  MR_Universidades_id=:newUniversidad, MR_Estados_id=:newEstado, MR_Paises_id=:newPais 
                  WHERE id=:id";
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":newNombre", $new["nombre"] ?? $current["nombre"]);
-        $stmt->bindValue(":newApellido", $new["apellidos"] ?? $current["apellidos"]);
-        $stmt->bindValue(":newGenero", $new["genero"] ?? $current["genero"]);
-        $stmt->bindValue(":newUniversidad", $new["universidad"] ?? $current["universidad"]);
-        $stmt->bindValue(":newEstado", $new["estado"] ?? $current["estado"]);
-        $stmt->bindValue(":newPais", $new["pais"] ?? $current["pais"]);
+        $stmt->bindValue(":newNombre", $member->getName());
+        $stmt->bindValue(":newApellido", $member->getLastName());
+        $stmt->bindValue(":newGenero", $member->getGender());
+        $stmt->bindValue(":newUniversidad", $member->getUniversityId());
+        $stmt->bindValue(":newEstado", $member->getStateId());
+        $stmt->bindValue(":newPais", $member->getCountryId());
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         
         // Update email and/or password if either is provided

@@ -37,6 +37,25 @@ class MembershipApplicationController {
     }
 
     public function registerMembership() {
+        $this->processCollectionRequest($_SERVER['REQUEST_METHOD'] ?? 'POST');
+    }
+
+    // Esta ruta no maneja un recurso identificado por id (siempre crea una solicitud
+    // nueva), así que solo existe la rama de colección.
+    public function processCollectionRequest($method) {
+        switch ($method) {
+            case 'POST':
+                $this->createMembershipApplication();
+                break;
+
+            default:
+                http_response_code(405);
+                echo json_encode(["status" => "error", "message" => "Método no soportado para esta colección"]);
+                break;
+        }
+    }
+
+    private function createMembershipApplication() {
         $userPayload = $this->getUserFromToken();
 
         $data = json_decode(file_get_contents('php://input'), true);

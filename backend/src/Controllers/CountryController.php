@@ -6,7 +6,36 @@ class CountryController{
         $this->service = $service;
         // Add the payload once that part is finished
     }
+
     public function handleRequest($method, $data, $id = null)
+    {
+        if ($id) {
+            $this->processResourceRequest($method, $id, $data);
+        } else {
+            $this->processCollectionRequest($method, $data);
+        }
+    }
+
+    public function processResourceRequest($method, $id, $data)
+    {
+        switch ($method) {
+            case 'GET':
+                $this->listCountries();
+                break;
+            case 'PUT':
+                $this->updateCountry($id, $data, true); // true = requires full update
+                break;
+            case 'PATCH':
+                $this->updateCountry($id, $data, false); // false = partial update
+                break;
+            default:
+                header('HTTP/1.1 405 Method Not Allowed');
+                echo json_encode(['message' => 'Method not allowed']);
+                break;
+        }
+    }
+
+    public function processCollectionRequest($method, $data)
     {
         switch ($method) {
             case 'GET':
@@ -14,12 +43,6 @@ class CountryController{
                 break;
             case 'POST':
                 $this->createCountry($data);
-                break;
-            case 'PUT':
-                $this->updateCountry($id, $data, true); // true = requires full update
-                break;
-            case 'PATCH':
-                $this->updateCountry($id, $data, false); // false = partial update
                 break;
             default:
                 header('HTTP/1.1 405 Method Not Allowed');

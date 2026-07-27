@@ -9,10 +9,25 @@ class RoleController{
     public function handleRequest($request, $id, $data){
         $method = $request['REQUEST_METHOD'];
 
+        if ($id) {
+            return $this->processResourceRequest($method, $id, $data);
+        }
+
+        return $this->processCollectionRequest($method, $data);
+    }
+
+    public function processResourceRequest($method, $id, $data){
         switch ($method) {
             case 'PATCH':
                 return $this->changeRole($id, $data);
 
+            default:
+                throw new Exception('denegado');
+        }
+    }
+
+    public function processCollectionRequest($method, $data){
+        switch ($method) {
             default:
                 throw new Exception('denegado');
         }

@@ -12,12 +12,17 @@ class MembresiasController{
     public function handleRequest($request, $id, $data){
         $method = $request['REQUEST_METHOD'];
 
+        if ($id) {
+            return $this->processResourceRequest($method, $id, $data);
+        }
+
+        return $this->processCollectionRequest($method, $data);
+    }
+
+    public function processResourceRequest($method, $id, $data){
         switch ($method) {
             case 'GET':
                 return $this->getMembresias();
-            
-            case 'POST':
-                return $this->postMembresia($data);
 
             case 'DELETE':
                 return $this->deleteMembresia($id);
@@ -27,9 +32,23 @@ class MembresiasController{
         }
     }
 
+    public function processCollectionRequest($method, $data){
+        switch ($method) {
+            case 'GET':
+                return $this->getMembresias();
+
+            case 'POST':
+                return $this->postMembresia($data);
+
+            default:
+                throw new Exception('denegado');
+        }
+    }
+
     public function getMembresias(){
         $membresias = $this->membresiasService->getMembresias();
-        return TypeCaster::castRows($membresias);
+        $membresiasArray = array_map(fn(Membresias $m) => $m->toArray(), $membresias);
+        return TypeCaster::castRows($membresiasArray);
     }
 
     public function postMembresia($data){

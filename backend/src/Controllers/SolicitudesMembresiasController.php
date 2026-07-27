@@ -23,7 +23,9 @@ class SolicitudesMembresiasController {
                 echo json_encode($solicitud);
                 break;
             default:
-                throw new Exception('Método no soportado para este recurso');
+                http_response_code(405);
+                echo json_encode(['error' => 'Método no soportado para este recurso']);
+                break;
         }
     }
     public function processCollectionRequest(string $method) {
@@ -33,7 +35,9 @@ class SolicitudesMembresiasController {
                 echo json_encode($solicitudes);
                 break;
             default:
-                throw new Exception('Método no soportado para esta colección');
+                http_response_code(405);
+                echo json_encode(['error' => 'Método no soportado para esta colección']);
+                break;
         }
     }
 

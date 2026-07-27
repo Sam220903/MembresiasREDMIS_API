@@ -8,38 +8,56 @@ class MembresiasService {
         $this->connection = $connection;
     }
 
-    public function getMembresias() {
+    public function getMembresias(): array {
         $query = "SELECT id, nombre, tipo FROM MR_Membresias WHERE activo = 1;";
         $stmt = $this->connection->prepare($query);
         $stmt->execute();
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $results;
+
+        $membresias = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $membresias[] = new Membresias((int)$row['id'], $row['nombre'], $row['tipo']);
+        }
+        return $membresias;
     }
 
-    public function getMembresia($id) {
-        $query = "SELECT nombre, tipo FROM MR_Membresias WHERE id = :id AND activo = 1;";
+    public function getMembresia($id): ?Membresias {
+        $query = "SELECT id, nombre, tipo FROM MR_Membresias WHERE id = :id AND activo = 1;";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
-        $membresia = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $membresia ?: null;
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }
+
+        return new Membresias((int)$row['id'], $row['nombre'], $row['tipo']);
     }
 
     public function mejoraMembresia($id, $data) {
+        $membresia = $this->getMembresia($id);
+        if (!$membresia) {
+            return false;
+        }
+
+        $membresia->setType($data["tipo"]);
+
         $query = "UPDATE MR_Membresias 
         SET tipo = :tipo
         WHERE id = :id";
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(':tipo', $data["tipo"]);
+        $stmt->bindValue(':tipo', $membresia->getType());
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        return $stmt->execute();
     }
+
     public function postMembresias($data) {
+        $membresia = new Membresias(null, $data['nombre'], $data['tipo']);
+
         $query = "INSERT INTO MR_Membresias (nombre, tipo) VALUES (:nombre, :tipo)";
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(':nombre', $data['nombre']);
-        $stmt->bindValue(':tipo', $data['tipo']);
+        $stmt->bindValue(':nombre', $membresia->getName());
+        $stmt->bindValue(':tipo', $membresia->getType());
         $stmt->execute();
         return $this->connection->lastInsertId();
     }

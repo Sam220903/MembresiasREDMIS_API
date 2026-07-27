@@ -10,23 +10,41 @@
 
         public function handleRequest($request, $id, $data) {
             $method = $request['REQUEST_METHOD'];
-    
+
+            if ($id) {
+                return $this->processResourceRequest($method, $id, $data);
+            }
+
+            return $this->processCollectionRequest($method, $data);
+        }
+
+        public function processResourceRequest($method, $id, $data) {
             switch ($method) {
                 case 'GET':
-                    return $id ? $this->getMemberById($id) : $this->getAllMembers();
-                
-                case 'POST':
-                    return $this->postMiembro($data);
-    
+                    return $this->getMemberById($id);
+
                 case 'PATCH':
                     if (isset($data['accion']) && $data['accion'] === 'verificar') {
                         return $this->verificarMiembro($id, $data);
                     }
                     return $this->updateMember($id, $data);
-    
+
                 case 'DELETE':
                     return $this->deleteMiembro($id);
-    
+
+                default:
+                    throw new Exception('Método no permitido', 405);
+            }
+        }
+
+        public function processCollectionRequest($method, $data) {
+            switch ($method) {
+                case 'GET':
+                    return $this->getAllMembers();
+
+                case 'POST':
+                    return $this->postMiembro($data);
+
                 default:
                     throw new Exception('Método no permitido', 405);
             }
@@ -71,7 +89,23 @@
                 'message' => 'Cuenta verificada exitosamente'
             ];
         }
+
         public function verifyByEmail($data) {
+            return $this->processVerifyByEmailRequest($_SERVER['REQUEST_METHOD'] ?? 'POST', $data);
+        }
+
+        public function processVerifyByEmailRequest($method, $data) {
+            switch ($method) {
+                case 'POST':
+                case 'PATCH':
+                    return $this->doVerifyByEmail($data);
+
+                default:
+                    throw new Exception('Método no permitido', 405);
+            }
+        }
+
+        private function doVerifyByEmail($data) {
             if (empty($data['email']) || empty($data['code'])) {
                 throw new Exception('Email y código son requeridos', 400);
             }
@@ -97,6 +131,21 @@
         }
         
         public function resendVerificationCode($data) {
+            return $this->processResendVerificationCodeRequest($_SERVER['REQUEST_METHOD'] ?? 'POST', $data);
+        }
+
+        public function processResendVerificationCodeRequest($method, $data) {
+            switch ($method) {
+                case 'POST':
+                case 'PATCH':
+                    return $this->doResendVerificationCode($data);
+
+                default:
+                    throw new Exception('Método no permitido', 405);
+            }
+        }
+
+        private function doResendVerificationCode($data) {
             if (empty($data['email'])) {
                 throw new Exception('Email es requerido', 400);
             }
@@ -116,6 +165,7 @@
                 'message' => 'Se ha enviado un nuevo código de verificación a tu email'
             ];
         }
+
         public function deleteMiembro($id) {
             if (empty($id)) throw new Exception('ID requerido');
             return $this->miembrosService->deleteMiembro($id);
@@ -137,6 +187,3 @@
         }
         
     }
-?>
-
-

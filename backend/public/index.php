@@ -95,7 +95,8 @@ switch ($route){
 
     //Ruta para solicitar membresias
     case "solicitarMembresia":
-        $service = new MembershipApplicationService($dbConnection);
+        $cvService = new CvService($dbConnection);
+        $service = new MembershipApplicationService($dbConnection, $cvService);
         $mailerService = new MailerService();
         $notificationService = new MembershipNotificationService($dbConnection);
         $controller = new MembershipApplicationController($service, $mailerService, $notificationService);
@@ -152,10 +153,22 @@ switch ($route){
         $controller->processRequest($_SERVER['REQUEST_METHOD'], $id);
         break;
 
+    case "cv":
+        $cvService = new CvService($dbConnection);
+        $cvController = new CvController($cvService);
+        try {
+            $cvController->processRequest($_SERVER['REQUEST_METHOD'], $id);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        break;
+
     case "miembros":
         $mailerService = new MailerService();
         $miembrosService = new MiembrosService($dbConnection);
-        $miembrosController = new MiembrosController($miembrosService, $mailerService);
+        $cvService = new CvService($dbConnection);
+        $miembrosController = new MiembrosController($miembrosService, $mailerService, $cvService);
     
         $data = $_POST;
         if (empty($data)) {
