@@ -130,7 +130,36 @@ class MiembrosService{
         }
 
         $stmt->execute();
+
+        // La línea de investigación vive en una tabla de relación aparte
+        // (MR_MiembrosInvestigaciones), no en MR_Miembros: solo se toca si el
+        // campo viene explícito en la petición (permite dejarla intacta en
+        // ediciones que no la mencionan).
+        if (array_key_exists('lineaInvestigacionId', $new)) {
+            $this->setMemberInvestigationLine($id, $new['lineaInvestigacionId']);
+        }
+
         return $this->getMemberById($id);
+    }
+
+    // Reemplaza la línea de investigación actual del miembro por la indicada
+    // (o la elimina si $investigationLineId viene vacío/null).
+    private function setMemberInvestigationLine($id, $investigationLineId){
+        $delete = "DELETE FROM MR_MiembrosInvestigaciones WHERE MR_Miembros_id = :id";
+        $stmt = $this->connection->prepare($delete);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        if (empty($investigationLineId)) {
+            return;
+        }
+
+        $insert = "INSERT INTO MR_MiembrosInvestigaciones (MR_Miembros_id, MR_LineaInvestigaciones_id) 
+                   VALUES (:id, :lineaInvestigacionId)";
+        $stmt = $this->connection->prepare($insert);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->bindValue(":lineaInvestigacionId", $investigationLineId, PDO::PARAM_INT);
+        $stmt->execute();
     }
 
     public function updateLogin($id, $email, $password){
@@ -239,7 +268,15 @@ class MiembrosService{
                 MR_TiposUsuario.nombre AS tipo_usuario,
                 MR_Login.email,
                 MR_Login.ultimo_acceso,
-                MR_ArchivosMiembros.cv AS cv
+                MR_ArchivosMiembros.cv AS cv,
+                (SELECT li.id FROM MR_MiembrosInvestigaciones mi
+                    JOIN MR_LineaInvestigaciones li ON mi.MR_LineaInvestigaciones_id = li.id
+                    WHERE mi.MR_Miembros_id = MR_Miembros.id
+                    ORDER BY mi.id DESC LIMIT 1) AS linea_investigacion_id,
+                (SELECT li.nombre FROM MR_MiembrosInvestigaciones mi
+                    JOIN MR_LineaInvestigaciones li ON mi.MR_LineaInvestigaciones_id = li.id
+                    WHERE mi.MR_Miembros_id = MR_Miembros.id
+                    ORDER BY mi.id DESC LIMIT 1) AS linea_investigacion
             FROM MR_Miembros
             LEFT JOIN MR_Universidades ON MR_Miembros.MR_Universidades_id = MR_Universidades.id
             LEFT JOIN MR_Estados ON MR_Miembros.MR_Estados_id = MR_Estados.id
@@ -273,7 +310,9 @@ class MiembrosService{
             'estatus' => $member['estatus'],
             'tipo_usuario' => $member['tipo_usuario'],
             'email' => $member['email'],
-            'ultimo_acceso' => $member['ultimo_acceso']
+            'ultimo_acceso' => $member['ultimo_acceso'],
+            'lineaInvestigacionId' => $member['linea_investigacion_id'],
+            'lineaInvestigacion' => $member['linea_investigacion']
         ];
 
 

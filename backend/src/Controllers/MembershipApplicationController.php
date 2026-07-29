@@ -59,7 +59,7 @@ class MembershipApplicationController {
         $userPayload = $this->getUserFromToken();
 
         $data = json_decode(file_get_contents('php://input'), true);
-        if (!isset($data['MR_Membresias_id']) || !isset($data['cv']) || !isset($data['telefono']) || !isset($data['cv_base64'])) {
+        if (!isset($data['MR_Membresias_id']) || !isset($data['telefono'])) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Todos los campos requeridos deben ser proporcionados."]);
             exit;
@@ -95,12 +95,6 @@ class MembershipApplicationController {
                 }
             }
             
-            $file_path = '../src/pdfs/cvs/' . $data['cv'];
-            // Lanzar error si el archivo no se puede guardar
-            if (!PDFProcessor::savePDF($data['cv_base64'], $file_path)) {
-                throw new Exception("Error al guardar el archivo PDF.");
-            }
-
             http_response_code(201);
             echo json_encode([
                 "status" => "success", 

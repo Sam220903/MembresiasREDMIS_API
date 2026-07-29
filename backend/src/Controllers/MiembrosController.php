@@ -3,9 +3,11 @@
     class MiembrosController{
         private $miembrosService;
         private $mailerService;
-        public function __construct($miembrosService,$mailerService){
+        private $cvService;
+        public function __construct($miembrosService,$mailerService,$cvService = null){
             $this->miembrosService = $miembrosService;
             $this->mailerService = $mailerService;
+            $this->cvService = $cvService;
         }
 
         public function handleRequest($request, $id, $data) {
@@ -183,7 +185,17 @@
         }
 
         public function updateMember($id, $data){
-            return $this->miembrosService->updateMember($id, $data);
+            $result = $this->miembrosService->updateMember($id, $data);
+
+            // Si el perfil se edita incluyendo un CV (la primera vez que lo sube,
+            // o para reemplazar el que ya tenía), se crea o actualiza aquí mismo,
+            // reutilizando la misma lógica que expone el endpoint dedicado /cv.
+            if (isset($data['cv_base64']) && $this->cvService) {
+                $cv = $this->cvService->createOrUpdateForMember((int)$id, $data['cv_base64']);
+                $result['cv'] = $cv->toArray();
+            }
+
+            return $result;
         }
         
     }

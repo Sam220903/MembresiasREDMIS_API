@@ -13,12 +13,17 @@ class InvestigationLinesService {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function createLine(InvestigationLine $line): bool {
+    public function createLine(InvestigationLine $line): ?int {
         $sql = "INSERT INTO MR_LineaInvestigaciones (nombre) VALUES (:nombre)";
         $stmt = $this->conn->prepare($sql);
         $name = $line->getName();
         $stmt->bindParam(':nombre', $name);
-        return $stmt->execute();
+
+        if (!$stmt->execute()) {
+            return null;
+        }
+
+        return (int) $this->conn->lastInsertId();
     }
 
     public function deleteLine(int $id): bool {

@@ -59,9 +59,9 @@ class InvestigationLinesController {
                 }
 
                 $line    = new InvestigationLine(null, $name);
-                $success = $this->investigationLinesService->createLine($line);
-                http_response_code($success ? 201 : 500);
-                echo json_encode(['success' => $success]);
+                $newId   = $this->investigationLinesService->createLine($line);
+                http_response_code($newId !== null ? 201 : 500);
+                echo json_encode(['success' => $newId !== null, 'id' => $newId]);
                 break;
 
             default:

@@ -12,6 +12,7 @@ class Member {
     private ?int $countryId;
     private ?int $statusId;
     private ?int $userTypeId;
+    private ?int $investigationLineId;
 
     public function __construct(
         ?int $id,
@@ -25,7 +26,8 @@ class Member {
         ?int $userTypeId = null,
         ?string $code = null,
         bool $verified = false,
-        bool $active = true
+        bool $active = true,
+        ?int $investigationLineId = null
     ) {
         $this->id = $id;
         $this->name = $name;
@@ -39,6 +41,7 @@ class Member {
         $this->code = $code;
         $this->verified = $verified;
         $this->active = $active;
+        $this->investigationLineId = $investigationLineId;
     }
 
     // Getters
@@ -54,6 +57,7 @@ class Member {
     public function getCountryId(): ?int { return $this->countryId; }
     public function getStatusId(): ?int { return $this->statusId; }
     public function getUserTypeId(): ?int { return $this->userTypeId; }
+    public function getInvestigationLineId(): ?int { return $this->investigationLineId; }
 
     // Setters
     public function setName(string $name): void { $this->name = $name; }
@@ -67,6 +71,7 @@ class Member {
     public function setCountryId(?int $countryId): void { $this->countryId = $countryId; }
     public function setStatusId(?int $statusId): void { $this->statusId = $statusId; }
     public function setUserTypeId(?int $userTypeId): void { $this->userTypeId = $userTypeId; }
+    public function setInvestigationLineId(?int $investigationLineId): void { $this->investigationLineId = $investigationLineId; }
 
     public function toArray(): array {
         return [
@@ -82,6 +87,7 @@ class Member {
             'paisId' => $this->countryId,
             'estatusId' => $this->statusId,
             'tipoUsuarioId' => $this->userTypeId,
+            'investigationLineId' => $this->investigationLineId,
         ];
     }
 }
