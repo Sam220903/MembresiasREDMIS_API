@@ -94,6 +94,16 @@ class MembershipApplicationController {
                     $emailStatus = "y correo enviado";
                 }
             }
+
+            // Confirmación al propio usuario de que su solicitud fue recibida
+            // (independiente de si la notificación al admin tuvo éxito o no)
+            if ($membershipData) {
+                $this->mailerService->sendMembershipApplicationReceived(
+                    $membershipData['userEmail'],
+                    $membershipData['nombre'] . ' ' . $membershipData['apellidos'],
+                    $membershipData['membershipType']
+                );
+            }
             
             http_response_code(201);
             echo json_encode([

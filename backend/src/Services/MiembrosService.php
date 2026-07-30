@@ -7,42 +7,50 @@ class MiembrosService{
         $this->connection=$connection;
     }
     public function postMiembro($data) {
+        // Evitar registrar de nuevo un email ya existente. Se verifica antes
+        // de insertar nada para no dejar un registro huérfano en MR_Miembros
+        // si el email ya está en uso (lo que antes ocurría, ya que el
+        // constraint UNIQUE de MR_Login se violaba después de haber creado
+        // el miembro).
+        $miembroExistente = $this->getMiembroByEmail($data["email"]);
+        if ($miembroExistente) {
+            throw new Exception('Ya existe una cuenta registrada con este correo electrónico.', 409);
+        }
+
         // Generar código de verificación
         $codigo = $this->generarCodigoVerificacion();
-
-        // El registro público siempre crea miembros sin verificar y con el tipo de usuario 2 (miembro estándar)
-        $member = new Member(
-            null,
-            $data["nombre"],
-            $data["apellidos"],
-            $data["genero"],
-            $data["universidad"] ?? null,
-            $data["estado"] ?? null,
-            $data["paises"] ?? null,
-            null,
-            2,
-            $codigo,
-            false,
-            true
-        );
-
+        
         $query = "INSERT INTO MR_Miembros (nombre, apellidos, genero, codigo, verificado, MR_Universidades_id, MR_Estados_id, MR_Paises_id, MR_TiposUsuario_id) 
-                  VALUES (:nombre, :apellidos, :genero, :codigo, 0, :MR_Universidades_id, :MR_Estados_id, :MR_Paises_id, :MR_TiposUsuario_id)";
+                  VALUES (:nombre, :apellidos, :genero, :codigo, 0, :MR_Universidades_id, :MR_Estados_id, :MR_Paises_id, 2)";
         
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":nombre", $member->getName());
-        $stmt->bindValue(":apellidos", $member->getLastName());
-        $stmt->bindValue(":genero", $member->getGender());
-        $stmt->bindValue(":codigo", $member->getCode());
-        $stmt->bindValue(":MR_Universidades_id", $member->getUniversityId());
-        $stmt->bindValue(":MR_Estados_id", $member->getStateId());
-        $stmt->bindValue(":MR_Paises_id", $member->getCountryId());
-        $stmt->bindValue(":MR_TiposUsuario_id", $member->getUserTypeId());
+        $stmt->bindValue(":nombre", $data["nombre"]);
+        $stmt->bindValue(":apellidos", $data["apellidos"]);
+        $stmt->bindValue(":genero", $data["genero"]);
+        $stmt->bindValue(":codigo", $codigo);  // Usar el código generado
+        $stmt->bindValue(":MR_Universidades_id", $data["universidad"] ?? null);
+        $stmt->bindValue(":MR_Estados_id", $data["estado"] ?? null);
+        $stmt->bindValue(":MR_Paises_id", $data["paises"] ?? null);
     
         $stmt->execute();
         $miembroId = $this->connection->lastInsertId();
-        $this->postLogin($miembroId, $data);
-        
+
+        try {
+            $this->postLogin($miembroId, $data);
+        } catch (PDOException $e) {
+            // Red de seguridad ante una condición de carrera (dos registros
+            // simultáneos con el mismo email pasando la verificación de
+            // arriba casi al mismo tiempo). Se revierte el miembro recién
+            // creado para no dejarlo huérfano sin credenciales.
+            $this->connection->prepare("DELETE FROM MR_Miembros WHERE id = :id")
+                ->execute([":id" => $miembroId]);
+
+            if ($e->getCode() === '23000') {
+                throw new Exception('Ya existe una cuenta registrada con este correo electrónico.', 409);
+            }
+            throw $e;
+        }
+
         // Devolver también el código generado para poder enviarlo por email
         return ["id" => $miembroId, "codigo" => $codigo];
     }
@@ -95,27 +103,17 @@ class MiembrosService{
         $current = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$current) throw new Exception('Miembro no encontrado');
-
-        $member = new Member(
-            (int)$current["id"],
-            $new["nombre"] ?? $current["nombre"],
-            $new["apellidos"] ?? $current["apellidos"],
-            $new["genero"] ?? $current["genero"],
-            $new["universidad"] ?? $current["universidad"],
-            $new["estado"] ?? $current["estado"],
-            $new["pais"] ?? $current["pais"]
-        );
-
+        
         $query = "UPDATE MR_Miembros SET nombre=:newNombre, apellidos=:newApellido, genero=:newGenero, 
                  MR_Universidades_id=:newUniversidad, MR_Estados_id=:newEstado, MR_Paises_id=:newPais 
                  WHERE id=:id";
         $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":newNombre", $member->getName());
-        $stmt->bindValue(":newApellido", $member->getLastName());
-        $stmt->bindValue(":newGenero", $member->getGender());
-        $stmt->bindValue(":newUniversidad", $member->getUniversityId());
-        $stmt->bindValue(":newEstado", $member->getStateId());
-        $stmt->bindValue(":newPais", $member->getCountryId());
+        $stmt->bindValue(":newNombre", $new["nombre"] ?? $current["nombre"]);
+        $stmt->bindValue(":newApellido", $new["apellidos"] ?? $current["apellidos"]);
+        $stmt->bindValue(":newGenero", $new["genero"] ?? $current["genero"]);
+        $stmt->bindValue(":newUniversidad", $new["universidad"] ?? $current["universidad"]);
+        $stmt->bindValue(":newEstado", $new["estado"] ?? $current["estado"]);
+        $stmt->bindValue(":newPais", $new["pais"] ?? $current["pais"]);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         
         // Update email and/or password if either is provided
@@ -130,36 +128,7 @@ class MiembrosService{
         }
 
         $stmt->execute();
-
-        // La línea de investigación vive en una tabla de relación aparte
-        // (MR_MiembrosInvestigaciones), no en MR_Miembros: solo se toca si el
-        // campo viene explícito en la petición (permite dejarla intacta en
-        // ediciones que no la mencionan).
-        if (array_key_exists('lineaInvestigacionId', $new)) {
-            $this->setMemberInvestigationLine($id, $new['lineaInvestigacionId']);
-        }
-
         return $this->getMemberById($id);
-    }
-
-    // Reemplaza la línea de investigación actual del miembro por la indicada
-    // (o la elimina si $investigationLineId viene vacío/null).
-    private function setMemberInvestigationLine($id, $investigationLineId){
-        $delete = "DELETE FROM MR_MiembrosInvestigaciones WHERE MR_Miembros_id = :id";
-        $stmt = $this->connection->prepare($delete);
-        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        if (empty($investigationLineId)) {
-            return;
-        }
-
-        $insert = "INSERT INTO MR_MiembrosInvestigaciones (MR_Miembros_id, MR_LineaInvestigaciones_id) 
-                   VALUES (:id, :lineaInvestigacionId)";
-        $stmt = $this->connection->prepare($insert);
-        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        $stmt->bindValue(":lineaInvestigacionId", $investigationLineId, PDO::PARAM_INT);
-        $stmt->execute();
     }
 
     public function updateLogin($id, $email, $password){
@@ -213,34 +182,10 @@ class MiembrosService{
     }
 
     public function getAllMembers(): array {
-        $sql = "
-            WITH SolicitudesOrdenadas AS (
-                SELECT
-                    u.id AS usuario_id,
-                    CONCAT(u.nombre, ' ', u.apellidos) AS nombre_completo,
-                    u.MR_TiposUsuario_id AS rol,
-                    m.nombre AS membresia,
-                    s.fecha_solicitud,
-                    s.estado,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY u.id
-                        ORDER BY
-                            CASE
-                                WHEN s.estado = 'Aprobado' THEN 1
-                                WHEN s.estado = 'Pendiente' THEN 2
-                                WHEN s.estado = 'Rechazado' THEN 3
-                                ELSE 4
-                            END,
-                            s.fecha_solicitud DESC
-                    ) AS rn
-                FROM MR_Miembros u
-                LEFT JOIN MR_SolicitudesMembresia s ON u.id = s.MR_Miembros_id
-                LEFT JOIN MR_Membresias m ON s.MR_Membresias_id = m.id
-            )
-            SELECT usuario_id, nombre_completo, rol, membresia, fecha_solicitud, estado
-            FROM SolicitudesOrdenadas
-            WHERE rn = 1
-            ORDER BY usuario_id;";
+        $sql = " SELECT u.id AS user_id, CONCAT(u.nombre, ' ', u.apellidos) AS name,
+                    u.MR_TiposUsuario_id AS role, l.email
+                    FROM MR_Miembros u
+                    LEFT JOIN mr_db.MR_Login l ON u.id = l.MR_Miembros_id";
         $stmt = $this->connection->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -268,15 +213,7 @@ class MiembrosService{
                 MR_TiposUsuario.nombre AS tipo_usuario,
                 MR_Login.email,
                 MR_Login.ultimo_acceso,
-                MR_ArchivosMiembros.cv AS cv,
-                (SELECT li.id FROM MR_MiembrosInvestigaciones mi
-                    JOIN MR_LineaInvestigaciones li ON mi.MR_LineaInvestigaciones_id = li.id
-                    WHERE mi.MR_Miembros_id = MR_Miembros.id
-                    ORDER BY mi.id DESC LIMIT 1) AS linea_investigacion_id,
-                (SELECT li.nombre FROM MR_MiembrosInvestigaciones mi
-                    JOIN MR_LineaInvestigaciones li ON mi.MR_LineaInvestigaciones_id = li.id
-                    WHERE mi.MR_Miembros_id = MR_Miembros.id
-                    ORDER BY mi.id DESC LIMIT 1) AS linea_investigacion
+                MR_ArchivosMiembros.cv AS cv
             FROM MR_Miembros
             LEFT JOIN MR_Universidades ON MR_Miembros.MR_Universidades_id = MR_Universidades.id
             LEFT JOIN MR_Estados ON MR_Miembros.MR_Estados_id = MR_Estados.id
@@ -310,9 +247,7 @@ class MiembrosService{
             'estatus' => $member['estatus'],
             'tipo_usuario' => $member['tipo_usuario'],
             'email' => $member['email'],
-            'ultimo_acceso' => $member['ultimo_acceso'],
-            'lineaInvestigacionId' => $member['linea_investigacion_id'],
-            'lineaInvestigacion' => $member['linea_investigacion']
+            'ultimo_acceso' => $member['ultimo_acceso']
         ];
 
 

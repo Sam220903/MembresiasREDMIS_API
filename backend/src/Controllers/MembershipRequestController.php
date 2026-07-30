@@ -78,14 +78,21 @@ class MembershipRequestController {
             $result = $this->membershipService->updateRequestStatus($id, 'APROBADA');
             $result = TypeCaster::castRow($result);
 
-            
-            $pdfPath = $this->mailerService->normalizePdfPath('/path/to/membership.pdf');
+            $pdfPath = $result['certificatePath'] ?? null;
+            $fileName = $result['certificateFileName'] ?? 'Membresia.pdf';
 
-            $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], [
-                'path' => $pdfPath,
-                'fileName' => 'Membresia.pdf'
-            ]);
-            
+            if ($pdfPath) {
+                $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], [
+                    'path' => $pdfPath,
+                    'fileName' => $fileName
+                ]);
+            } else {
+                // Si por algún motivo no se pudo generar la credencial, se manda
+                // igual el correo de aprobación (sin adjunto) en vez de fallar
+                // silenciosamente o adjuntar un archivo que no existe.
+                error_log("No se pudo generar la credencial en PDF para la solicitud {$id}; se envía el correo sin adjunto.");
+                $this->mailerService->sendMembershipApproval($result['email'], $result['nombre'], []);
+            }
 
             http_response_code(200);
             echo json_encode(["status" => "success", "message" => "Solicitud aprobada y correo enviado", "data" => $result]);

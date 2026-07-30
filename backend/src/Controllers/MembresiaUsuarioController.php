@@ -2,9 +2,11 @@
 
 class MembresiaUsuarioController {
     private $service;
+    private $mailerService;
 
-    public function __construct($conn) {
+    public function __construct($conn, MailerService $mailerService) {
         $this->service = new MembresiaUsuarioService($conn);
+        $this->mailerService = $mailerService;
     }
 
     public function obtenerMembresiaUsuario($data) {
@@ -75,6 +77,16 @@ class MembresiaUsuarioController {
                     throw new Exception("Se requiere el ID del usuario en el cuerpo de la solicitud");
                 }
                 $respuesta = $this->service->actualizarEstadoMembresia($id, $data);
+
+                $contacto = $this->service->obtenerContactoMiembro($id);
+                if ($contacto) {
+                    if ($data['estado'] == 1) {
+                        $this->mailerService->sendMembershipRestored($contacto['email'], $contacto['nombre']);
+                    } else {
+                        $this->mailerService->sendMembershipRevoked($contacto['email'], $contacto['nombre']);
+                    }
+                }
+
                 return TypeCaster::castRow($respuesta);
 
             default:

@@ -51,4 +51,18 @@ class MembresiaUsuarioService {
         $stmt->bindParam(':member_id', $id, PDO::PARAM_INT);
         $stmt->execute();
     }
+
+    // Nombre completo y correo del miembro, para las notificaciones de
+    // revocar/restablecer membresía.
+    public function obtenerContactoMiembro($id) {
+        $sql = "SELECT CONCAT(m.nombre, ' ', m.apellidos) AS nombre, l.email 
+                FROM MR_Miembros m 
+                JOIN MR_Login l ON m.id = l.MR_Miembros_id 
+                WHERE m.id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $contacto = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $contacto ?: null;
+    }
 }

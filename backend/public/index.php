@@ -44,7 +44,7 @@ $dbConnection = $database->getConnection(); // Ensure you get the connection obj
 $token_gateway = new TokenService($database);
 
 // Instancia de objetos para manejo de autorizaciones y roles
-$auth_middleware = new AuthMiddleware($jwt, ['login']);
+$auth_middleware = new AuthMiddleware($jwt, ['login', 'recuperarContrasena', 'restablecerContrasena']);
 
 // Obtener la ruta y el ID desde la URL
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -105,7 +105,9 @@ switch ($route){
 
     // Ruta de aceptar una membresía
     case "aceptarMembresia":
-        $membershipService = new MembershipService($dbConnection); // Ahora recibe la conexión
+        $membresiasService = new MembresiasService($dbConnection);
+        $certificateService = new MembershipCertificateService();
+        $membershipService = new MembershipService($dbConnection, $membresiasService, $certificateService);
         $mailerService = new MailerService();
         $controller = new MembershipRequestController($membershipService, $mailerService);
         $controller->acceptMembershipRequest($id);
@@ -113,7 +115,9 @@ switch ($route){
 
     // Ruta de rechazar una membresía
     case "rechazarMembresia":
-        $membershipService = new MembershipService($dbConnection); //  Ahora recibe la conexión
+        $membresiasService = new MembresiasService($dbConnection);
+        $certificateService = new MembershipCertificateService();
+        $membershipService = new MembershipService($dbConnection, $membresiasService, $certificateService);
         $mailerService = new MailerService();
         $controller = new MembershipRequestController($membershipService, $mailerService);
         $controller->rejectMembershipRequest($id);
@@ -272,7 +276,8 @@ switch ($route){
         
     case "membresiaUsuario":
             $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
-            $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+            $mailerService = new MailerService();
+            $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection, $mailerService);
             
             $data = $_POST;
             if (empty($data)) {
@@ -320,7 +325,8 @@ switch ($route){
     
     case "actualizarEstadoMembresia":
         $membresiaUsuarioService = new MembresiaUsuarioService($dbConnection);
-        $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection);
+        $mailerService = new MailerService();
+        $membresiaUsuarioController = new MembresiaUsuarioController($dbConnection, $mailerService);
         
         $data = $_POST;
         if (empty($data)) {
@@ -366,6 +372,22 @@ switch ($route){
             http_response_code(400);
             echo json_encode(["error" => $e->getMessage()]);
         }
+        break;
+
+    case 'recuperarContrasena':
+        $miembrosService = new MiembrosService($dbConnection);
+        $passwordResetService = new PasswordResetService($dbConnection, $miembrosService, $token_gateway);
+        $mailerService = new MailerService();
+        $controller = new PasswordResetController($passwordResetService, $mailerService);
+        $controller->requestReset();
+        break;
+
+    case 'restablecerContrasena':
+        $miembrosService = new MiembrosService($dbConnection);
+        $passwordResetService = new PasswordResetService($dbConnection, $miembrosService, $token_gateway);
+        $mailerService = new MailerService();
+        $controller = new PasswordResetController($passwordResetService, $mailerService);
+        $controller->confirmReset();
         break;
 
     default:

@@ -27,7 +27,7 @@ class TokenService{
     public function findValidTokensByUser($userID)
     {
         $sql = "SELECT t.* FROM MR_Tokens t inner join MR_Miembros u on t.MR_Miembros_id = u.id
-                WHERE u.id = :user AND (t.expired = false OR t.revoked = false)";
+                WHERE u.id = :user AND t.expired = false AND t.revoked = false";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(":user", $userID, PDO::PARAM_INT);
         $stmt->execute();
