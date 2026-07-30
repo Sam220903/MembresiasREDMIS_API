@@ -95,7 +95,7 @@ class MiembrosService{
     public function updateMember($id, $new){
         // Get the current member data with the actual IDs, not just names
         $query = "SELECT id, nombre, apellidos, genero, MR_Universidades_id as universidad, 
-                 MR_Estados_id as estado, MR_Paises_id as pais 
+                 MR_Estados_id as estado, MR_Paises_id as pais
                  FROM MR_Miembros WHERE id = :id";
         $stmt = $this->connection->prepare($query);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -182,10 +182,12 @@ class MiembrosService{
     }
 
     public function getAllMembers(): array {
-        $sql = " SELECT u.id AS user_id, CONCAT(u.nombre, ' ', u.apellidos) AS name,
-                    u.MR_TiposUsuario_id AS role, l.email
+        $sql = "SELECT u.id AS user_id, CONCAT(u.nombre, ' ', u.apellidos) AS name,
+                        u.MR_TiposUsuario_id AS rol, l.email, m.nombre AS membership
                     FROM MR_Miembros u
-                    LEFT JOIN mr_db.MR_Login l ON u.id = l.MR_Miembros_id";
+                    LEFT JOIN MR_Login l ON u.id = l.MR_Miembros_id
+                    LEFT JOIN MR_MiembrosMembresias mm ON u.id = mm.MR_Miembros_id
+                    LEFT JOIN MR_Membresias m ON mm.MR_Membresias_id = m.id;";
         $stmt = $this->connection->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -196,34 +198,33 @@ class MiembrosService{
             throw new Exception('ID inválido. Debe ser un número.');
         }
         
-        $sql = "
-            SELECT 
-                MR_Miembros.id,
-                " . ($includeSensitive ? "MR_Miembros.nombre, MR_Miembros.apellidos," : "") . "
-                MR_Miembros.nombre AS nombre,
-                " . ($includeSensitive ? "MR_Miembros.nombre, MR_Miembros.apellidos," : "") . "
-                MR_Miembros.apellidos AS apellidos,
-                MR_Miembros.genero,
-                MR_Miembros.fecha_registro,
-                MR_Miembros.ultima_actualizacion,
-                MR_Universidades.nombre AS universidad,
-                MR_Estados.nombre AS estado,
-                MR_Paises.nombre AS pais,
-                MR_EstatusMiembros.nombre AS estatus,
-                MR_TiposUsuario.nombre AS tipo_usuario,
-                MR_Login.email,
-                MR_Login.ultimo_acceso,
-                MR_ArchivosMiembros.cv AS cv
-            FROM MR_Miembros
-            LEFT JOIN MR_Universidades ON MR_Miembros.MR_Universidades_id = MR_Universidades.id
-            LEFT JOIN MR_Estados ON MR_Miembros.MR_Estados_id = MR_Estados.id
-            LEFT JOIN MR_Paises ON MR_Miembros.MR_Paises_id = MR_Paises.id
-            LEFT JOIN MR_EstatusMiembros ON MR_Miembros.MR_EstatusMiembros_id = MR_EstatusMiembros.id
-            LEFT JOIN MR_TiposUsuario ON MR_Miembros.MR_TiposUsuario_id = MR_TiposUsuario.id
-            LEFT JOIN MR_Login ON MR_Miembros.id = MR_Login.MR_Miembros_id
-            LEFT JOIN MR_ArchivosMiembros ON MR_Miembros.id = MR_ArchivosMiembros.MR_Miembros_id
-            WHERE MR_Miembros.id = :id;
-        ";
+        $sql = " SELECT
+                    m.id,
+                    m.nombre AS nombre,
+                    m.apellidos AS apellidos,
+                    m.genero,
+                    m.fecha_registro,
+                    m.ultima_actualizacion,
+                    u.nombre AS universidad,
+                    e.nombre AS estado,
+                    p.nombre AS pais,
+                    em.nombre AS estatus,
+                    t.nombre AS tipo_usuario,
+                    l.email,
+                    l.ultimo_acceso,
+                    a.cv AS cv,
+                    li.nombre AS linea_investigacion
+                FROM MR_Miembros m
+                LEFT JOIN MR_Universidades u ON m.MR_Universidades_id = u.id
+                LEFT JOIN MR_Estados e ON m.MR_Estados_id = e.id
+                LEFT JOIN MR_Paises p ON m.MR_Paises_id = p.id
+                LEFT JOIN MR_EstatusMiembros em ON m.MR_EstatusMiembros_id = em.id
+                LEFT JOIN MR_TiposUsuario t ON m.MR_TiposUsuario_id = t.id
+                LEFT JOIN MR_Login l ON m.id = l.MR_Miembros_id
+                LEFT JOIN MR_ArchivosMiembros a ON m.id = a.MR_Miembros_id
+                LEFT JOIN MR_MiembrosInvestigaciones mi ON m.id = mi.MR_Miembros_id
+                LEFT JOIN MR_LineaInvestigaciones li ON li.id = mi.MR_LineaInvestigaciones_id
+                WHERE m.id = :id; ";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -247,7 +248,8 @@ class MiembrosService{
             'estatus' => $member['estatus'],
             'tipo_usuario' => $member['tipo_usuario'],
             'email' => $member['email'],
-            'ultimo_acceso' => $member['ultimo_acceso']
+            'ultimo_acceso' => $member['ultimo_acceso'],
+            'linea_investigacion' => $member['linea_investigacion']
         ];
 
 

@@ -13,7 +13,8 @@ create table MR_LineaInvestigaciones
 (
     id     int auto_increment
         primary key,
-    nombre varchar(120) not null
+    nombre varchar(120) not null,
+    activo tinyint(1) not null default 1,
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 create table MR_Membresias
