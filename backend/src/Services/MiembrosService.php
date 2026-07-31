@@ -127,8 +127,35 @@ class MiembrosService{
             $this->updatePassword($id, $hash);
         }
 
+        // Restaura la actualización de la línea de investigación como parte
+        // de "Actualizar los datos del miembro", reutilizando el servicio
+        // dedicado a esto (MemberInvestigationService), en vez de tocar la
+        // tabla puente directamente. Enviar linea_investigacion = null/vacío
+        // permite dejar al miembro sin línea asignada.
+        if (array_key_exists("linea_investigacion", $new)) {
+            $this->updateInvestigationLine($id, $new["linea_investigacion"]);
+        }
+
         $stmt->execute();
         return $this->getMemberById($id);
+    }
+
+    // Usa MemberInvestigationService (el servicio dedicado a la tabla puente
+    // MR_MiembrosInvestigaciones, el mismo que expone el endpoint
+    // /memberInvestigation) para reemplazar la línea de investigación del
+    // miembro: quita la(s) asignación(es) previa(s) con unassign() y, si se
+    // proporcionó una nueva línea, la crea con assign().
+    private function updateInvestigationLine($id, $lineId) {
+        $memberInvestigationService = new MemberInvestigationService($this->connection);
+
+        foreach ($memberInvestigationService->getByMember((int)$id) as $asignacionActual) {
+            $memberInvestigationService->unassign((int)$id, (int)$asignacionActual['line_id']);
+        }
+
+        if (!empty($lineId)) {
+            $nuevaAsignacion = new MemberInvestigation(null, (int)$id, (int)$lineId, date('Y-m-d'));
+            $memberInvestigationService->assign($nuevaAsignacion);
+        }
     }
 
     public function updateLogin($id, $email, $password){
