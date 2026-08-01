@@ -5,7 +5,7 @@ class MembershipService {
     private $membresiasService;
     private $certificateService;
 
-    public function __construct($dbConnection, MembresiasService $membresiasService, MembershipCertificateService $certificateService) {
+    public function __construct($dbConnection, MembresiasService $membresiasService) {
         $this->connection = $dbConnection;
         $this->membresiasService = $membresiasService;
         $this->certificateService = $certificateService;
@@ -52,19 +52,7 @@ class MembershipService {
 
                 $this->registerMembership($membresiaUsuario);
                 $this->updateMemberStatus($membresiaUsuario->getMemberId(), 1);
-
-                // Generar la credencial en PDF para adjuntarla al correo de aprobación
-                $memberRow = $this->findMemberNameById($membresiaUsuario->getMemberId());
-                $membershipType = $this->membresiasService->getMembresia($membresiaUsuario->getMembershipId());
-
-                if ($memberRow && $membershipType) {
-                    $certificate = $this->certificateService->generate(
-                        $memberRow['nombre'],
-                        $membershipType->getName(),
-                        $fechaInicio,
-                        $fechaFin
-                    );
-                }
+                
             } catch (\Throwable $th) {
                 throw new \Exception("Error al registrar la membresía: " . $th->getMessage());
             }

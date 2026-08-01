@@ -119,7 +119,7 @@ class MailerService {
                     <img src="cid:'.$this->logoCid.'" alt="REDMIS" style="max-width:160px; margin-bottom:20px;">
                     <h2>¡Bienvenido/a la familia REDMIS '.htmlspecialchars($userName, ENT_QUOTES, 'UTF-8').'!</h2>
                     <p>Hola <strong>'.htmlspecialchars($userName, ENT_QUOTES, 'UTF-8').'</strong>, nos complace informarte que tu solicitud de membresía ha sido <strong>aceptada</strong>. </p> 
-                    <p>Nos entusiama mucho tenerte como parte de nuestra familia. Adjunto a este correo encontrarás el archivo PDF de tu membresía.</p>
+                    <p>Nos entusiama mucho tenerte como parte de nuestra familia. Puedes consultar el documento de tu membresia ingresando al sistema en <em>Membresías/Descargar</em>.</p>
                     <hr>
                     <strong><small>RED TEMÁTICA MEXICANA DE INGENIERÍA DE SOFTWARE</small></strong>
                 </body>
@@ -129,23 +129,6 @@ class MailerService {
             $this->mail->Body = $htmlContent;
             $this->mail->AltBody = "Hola $userName, tu solicitud de membresía ha sido aceptada. En adjunto encontrarás el archivo PDF de tu membresía.";
     
-            if (!isset($pdfInfo['path'])) {
-                error_log("Aviso: se envía la aprobación de membresía sin adjuntar PDF (no se proporcionó ruta).");
-                $this->mail->Body .= '<p><strong>Nota:</strong> Tu credencial en PDF estará disponible próximamente.</p>';
-                $this->mail->AltBody .= "\n\nNota: Tu credencial en PDF estará disponible próximamente.";
-                return $this->mail->send();
-            }
-            
-            $pdfPath = $this->normalizePdfPath($pdfInfo['path']);
-            
-            if (file_exists($pdfPath) && is_readable($pdfPath)) {
-                $fileName = isset($pdfInfo['fileName']) ? $pdfInfo['fileName'] : basename($pdfPath);
-                $this->mail->addAttachment($pdfPath, $fileName, 'base64', 'application/pdf');
-            } else {
-                error_log("El archivo PDF no se encontró o no es legible: " . $pdfPath);
-                $this->mail->Body .= '<p><strong>Nota:</strong> Hubo un problema al adjuntar tu membresía. Por favor, contacta con soporte.</p>';
-                $this->mail->AltBody .= "\n\nNota: Hubo un problema al adjuntar tu membresía. Por favor, contacta con soporte.";
-            }
                             
             return $this->mail->send();
         } catch (Exception $e) {
