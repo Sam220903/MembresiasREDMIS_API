@@ -14,7 +14,7 @@ create table MR_LineaInvestigaciones
     id     int auto_increment
         primary key,
     nombre varchar(120) not null,
-    activo tinyint(1) not null default 1,
+    activo tinyint(1) not null default 1
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 create table MR_Membresias
@@ -244,15 +244,45 @@ INSERT INTO MR_Paises (nombre, codigo_iso) VALUES
     ('Argentina', 'ARG'),
     ('Colombia', 'COL');
 
--- Datos para MR_Estados
+-- Datos para MR_Estados (32 estados de México)
 INSERT INTO MR_Estados (nombre, MR_Paises_id) VALUES
-    ('Ciudad de México', 1),
-    ('Nuevo León', 1),
+    ('Aguascalientes', 1),
+    ('Baja California', 1),
+    ('Baja California Sur', 1),
+    ('Campeche', 1),
+    ('Chiapas', 1),
+    ('Chihuahua', 1),
+    ('Ciudad de México', 1),
+    ('Coahuila', 1),
+    ('Colima', 1),
+    ('Durango', 1),
+    ('Estado de México', 1),
+    ('Guanajuato', 1),
+    ('Guerrero', 1),
+    ('Hidalgo', 1),
     ('Jalisco', 1),
+    ('Michoacán', 1),
+    ('Morelos', 1),
+    ('Nayarit', 1),
+    ('Nuevo León', 1),
+    ('Oaxaca', 1),
+    ('Puebla', 1),
+    ('Querétaro', 1),
+    ('Quintana Roo', 1),
+    ('San Luis Potosí', 1),
+    ('Sinaloa', 1),
+    ('Sonora', 1),
+    ('Tabasco', 1),
+    ('Tamaulipas', 1),
+    ('Tlaxcala', 1),
+    ('Veracruz', 1),
+    ('Yucatán', 1),
+    ('Zacatecas', 1),
     ('California', 2),
     ('Madrid', 3),
     ('Buenos Aires', 4),
     ('Bogotá', 5);
+    
 
 -- Datos para MR_TiposUsuario
 INSERT INTO MR_TiposUsuario (nombre, descripcion) VALUES
@@ -260,13 +290,27 @@ INSERT INTO MR_TiposUsuario (nombre, descripcion) VALUES
     ('Usuario', 'Acceso estándar al sistema');
 
 -- Datos para MR_Universidades
+-- Datos para MR_Universidades
 INSERT INTO MR_Universidades (nombre, MR_Paises_id) VALUES
-    ('UNAM', 1),
-    ('Tec de Monterrey', 1),
-    ('Stanford University', 2),
-    ('Universidad Complutense de Madrid', 3),
-    ('Universidad de Buenos Aires', 4),
-    ('Universidad Nacional de Colombia', 5);
+    ('Universidad Autónoma de Ciudad Juárez', 1),
+    ('Instituto Tecnológico de Hermosillo', 1),
+    ('Centro Nacional de Investigación y Desarrollo Tecnológico (CENIDET)', 1),
+    ('Instituto Tecnológico y de Estudios Superiores de Monterrey', 1),
+    ('CINVESTAV, Tamaulipas', 1),   
+    ('Universidad Politécnica de Tapachula', 1),
+    ('Instituto Tecnológico de Sonora', 1),
+    ('Instituto Tecnológico de Tijuana', 1),
+    ('Instituto Tecnológico de León', 1),
+    ('Universidad Autónoma de Baja California', 1),
+    ('Universidad Nacional Autónoma de México', 1),
+    ('Universidad Autónoma de San Luis Potosí', 1),
+    ('Universidad Autónoma de Yucatán', 1),
+    ('Universidad Autónoma de Zacatecas', 1),
+    ('Universidad Tecnológica de la Mixteca', 1),
+    ('Universidad Popular Autónoma del Estado de Puebla', 1),
+    ('Universidad Veracruzana', 1),
+    ('Universidad Autónoma de Sinaloa', 1),
+    ('Universidad Autónoma Metropolitana', 1);
 
 -- Datos para MR_Miembros
 INSERT INTO MR_Miembros (nombre, apellidos, genero, codigo, verificado, activo, MR_Universidades_id, MR_Estados_id, MR_Paises_id, MR_EstatusMiembros_id, MR_TiposUsuario_id) VALUES
